@@ -13,6 +13,7 @@ class Screen:
         return self._data[y][x]
 
     def load(self, value):
+        self._data = [[" " for _ in range(21)] for _ in range(6)]
         for y, line in enumerate(value.splitlines()[1:]):
             for x, char in enumerate(line):
                 self._data[y][x] = char
@@ -40,10 +41,38 @@ class Asci:
         self.screen = Screen()
         self.end = 100
 
-    def new_map(self):
+    def _new_map(self):
         self.x = 10
         self.y = 5
         self.current_map = randint(1, 7)
+        print("Nouveau quartier :", self.current_map)
+
+    def _cell_test(self, direction):
+        # Left
+        if direction == 1:
+            if self.x - 1 < 0: return -1
+            else: cell = self.screen.get_cell(self.x - 1, self.y)
+
+        # Right
+        if direction == 3:
+            if self.x + 1 >= 21: return -1
+            else: cell = self.screen.get_cell(self.x + 1, self.y)
+
+        # Up
+        if direction == 5:
+            if self.y - 1 < 0: return -1
+            else: cell = self.screen.get_cell(self.x, self.y - 1)
+
+        # Down
+        if direction == 2:
+            if self.y + 1 >= 6: return -1
+            else: cell = self.screen.get_cell(self.x, self.y + 1)
+
+        cell_patterns = (" @", "^", "*", "$")
+        for index, pattern in enumerate(cell_patterns):
+            if cell in pattern: return index + 1
+
+        return 0
 
     def mainloop(self):
         key = key_buffer = 0
@@ -52,31 +81,35 @@ class Asci:
 
             self.screen.set_cell(self.x, self.y, "@")
             key = convert(self.screen.display())
-            self.screen.set_cell(self.x, self.y, " ")
 
             if not key: key = key_buffer
+            else: key_buffer = key
+
             self.keyboard_input(key)
 
     def keyboard_input(self, key):
         # Left
         if key == 1:
-            if self.x - 1 < 0: self.new_map()
-            else: self.x -= 1
+            cell_test = self._cell_test(1)
+            if cell_test == 1: self.x -= 1
 
         # Right
         if key == 3:
-            if self.x + 1 > 21: self.new_map()
-            else: self.x += 1
+            cell_test = self._cell_test(3)
+            if cell_test == 1: self.x += 1
 
         # Up
         if key == 5:
-            if self.y - 1 < 0: self.new_map()
-            else: self.y -= 1
+            cell_test = self._cell_test(5)
+            if cell_test == 1: self.y -= 1
 
         # Down
         if key == 2:
-            if self.y + 1 > 6: self.new_map()
-            else: self.y += 1
+            cell_test = self._cell_test(2)
+            if cell_test == 1: self.y += 1
+
+        if key in (1, 2, 3, 5):
+            if cell_test < 0: self._new_map()
 
         # Stat
         if key == 8:
@@ -95,7 +128,4 @@ def convert(n):
     try: return int(n)
     except: return 0
 
-if __name__ == "__main__":
-    game = Asci()
-    game.mainloop()
     
