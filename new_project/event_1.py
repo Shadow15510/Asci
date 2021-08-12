@@ -96,7 +96,7 @@ def get_dialogue(xp, pv, current_map, outdoor):
         dialogue = {
         "25": [2, 0, "Envoye par le Roi ! Mais... ca fait grimper la rancon ca !! Le code de teleportation ! Rien que ca ? J'en ai evicere pour moins que ca alors debale un argument credible. Me rendre un service ? Mmm... va donc tuer ce detrousseur la un peu plus bas. Ce malhonnete vole mes clients !"],
         "28": [1, 0, "Bien, tu a de l'avenir petit. Le code est 15510 tu le connaissais sans doute deja..."],
-        "base": [0,0,"Si tu tiens a ta vie", "plie bagages avant", "que je ne te les", "prennes !"]
+        "base": [0,0,"Si tu tiens a ta vie plie bagages avant que je ne te les prennes !"]
         }
 
         if xp_str in dialogue: return dialogue[xp_str]
