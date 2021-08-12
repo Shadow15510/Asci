@@ -3,8 +3,10 @@ from mapset import *
 
 
 class Screen:
-    def __init__(self):
-        self._data = [[" " for _ in range(21)] for _ in range(6)]
+    def __init__(self, screen_width=21, screen_height=6):
+        self._data = [[" " for _ in range(screen_width)] for _ in range(screen_height)]
+        self.width = screen_width
+        self.height = screen_height
 
     def set_cell(self, x, y, value):
         self._data[y][x] = value
@@ -13,7 +15,7 @@ class Screen:
         return self._data[y][x]
 
     def load(self, value):
-        self._data = [[" " for _ in range(21)] for _ in range(6)]
+        self._data = [[" " for _ in range(self.width)] for _ in range(self.height)]
         for y, line in enumerate(value.splitlines()[1:]):
             for x, char in enumerate(line):
                 self._data[y][x] = char
@@ -24,14 +26,26 @@ class Screen:
             print("".join(line))
         return input("> ")
 
+    def display_text(self, string, final_input=True):
+        for paragraph in text_formater(string):
+            print(paragraph)
+            if final_input: input()
+
+    def clear(self):
+        print("\n" * self.height)
+
 
 class Asci:
-    def __init__(self, stat=[0, 100, 1, True], opus_nb=1):
+    def __init__(self, stat="0.100.1.1", opus=1):
         # Load stats
+        stat = [int(i) for i in stat.split(".")]
         self.xp = stat[0]
         self.pv = stat[1]
         self.current_map = stat[2]
         self.outdoor = stat[3]
+
+        # Opus loading
+        load_opus(opus)
         
         # Initialize player's position
         self.x = 10
@@ -39,7 +53,8 @@ class Asci:
 
         # Misc initialisation
         self.screen = Screen()
-        self.end = 100
+        self.end = event.end
+        
 
     def _new_map(self):
         self.x = 10
@@ -73,20 +88,7 @@ class Asci:
 
         return 0
 
-    def mainloop(self):
-        key = key_buffer = 0
-        while key != 9 and self.pv > 0 and self.xp < self.end:
-            self.screen.load(get_map(self.current_map, self.outdoor))
-
-            self.screen.set_cell(self.x, self.y, "@")
-            key = convert(self.screen.display())
-
-            if not key: key = key_buffer
-            else: key_buffer = key
-
-            self.keyboard_input(key)
-
-    def keyboard_input(self, key):
+    def _keyboard_input(self, key):
         # Left
         if key == 1:
             cell_test = self._cell_test(1)
@@ -107,10 +109,32 @@ class Asci:
             cell_test = self._cell_test(2)
             if cell_test == 1: self.y += 1
 
+        # Stat
+        if key == 8:
+            places = ("Palais", "Thyel", "Medecins", "Foret", "Bibliotheque", "Plage", "Village", "Bois")
+            print(f"""* * Statistiques * *\nExpérience .....: {self.xp}\nPoints de vie ..: {self.pv}\nQuartier actuel :\n... {places[self.current_map - 1]} (n°{self.current_map})\n * *             * * """)
+            input(" ")
+
+        # Teleportation
+        if key == 15510 and self.xp > 28:
+            self.screen.clear()
+            qrt = convert(input("Numero du quartier :\n> "))
+            if 0 < qrt < 9:
+                self.current_map = qrt
+                self.x = 10
+                self.y = 5
+
+        # Quit
+        if key == 9:
+            stat = (self.xp, self.pv, self.current_map, self.outdoor)
+            print(f"Pour reprendre la partie, entrez le code :\n'{'.'.join([str(i) for i in stat])}'")
+
+        # Interaction with map
         if key in (1, 2, 3, 5):
             # Exit the map
             if cell_test < 0:
-                if self.outdoor: self._new_map()
+                if self.outdoor:
+                    self._new_map()
                 else:
                     self.outdoor = True
                     self.x = 10
@@ -124,35 +148,92 @@ class Asci:
 
             # PnJ
             elif cell_test == 3:
-                pass
+                self._dialogue()
 
             # Fight
             elif cell_test == 4:
-                pass
+                self._fight()
 
+    def _dialogue(self):
+        xp, pv, text = event.get_dialogue(self.xp, self.pv, self.current_map, self.outdoor)
+        self.xp += xp
+        self.pv += pv
 
+        self.screen.clear()
+        self.screen.display_text(text)
 
-        # Stat
-        if key == 8:
-            places = ("Palais", "Thyel", "Medecins", "Foret", "Bibliotheque", "Plage", "Village", "Bois")
-            print(f"""* * Statistiques * *\nExpérience .....: {self.xp}\nPoints de vie ..: {self.pv}\nQuartier actuel :\n... {places[self.current_map - 1]} (n°{self.current_map})\n * *             * * """)
-            input(" ")
+    def _fight(self):
+        enemy_pv = randint(50, 150)
+        enemy_weapon = randint(10, 50)
+        
+        self.screen.clear()
+        player_weapon = input("Code de l'arme :\n> ")
+        player_weapon = convert(player_weapon)
+        if player_weapon == 0:
+            self.screen.display_text("Vous avez abandonne le combat.")
+            return
 
-        # Action
-        if key == 7:
-            pass
+        while self.pv > 0 and enemy_pv > 0:
+            player_pa = player_weapon + randint(1, 25)
+            enemy_pa = enemy_weapon + randint(1, 25)
 
-        # Teleportation
-        if key == 15510:
-            pass
+            if player_pa > enemy_pa: enemy_pv -= player_pa
+            else: self.pv -= enemy_pa
 
-        # Quit
-        if key == 9:
-            pass
+        if self.pv > 0:
+            self.xp = event.get_interaction(self.xp, self.current_map)
+            self.screen.display_text("Vous avez vaincu votre adversaire !")
+        else:
+            stat = (self.xp, 100, self.current_map, self.outdoor)
+            self.screen.display_text(f"Vous avez perdu... Code de la dernière sauvegarde :\n'{'.'.join([str(i) for i in stat])}'", False)
+        
+
+    def mainloop(self):
+        key = key_buffer = 0
+        while key != 9 and self.pv > 0 and self.xp < self.end:
+            self.screen.load(get_map(self.current_map, self.outdoor))
+
+            self.screen.set_cell(self.x, self.y, "@")
+            key = convert(self.screen.display())
+
+            if not key: key = key_buffer
+            else: key_buffer = key
+
+            self._keyboard_input(key)
 
 
 def convert(n):
     try: return int(n)
     except: return 0
 
+
+def load_opus(opus):
+    if opus == 1:
+        import event_1 as e
+    elif opus == 2:
+        import event_2 as e
+    elif opus == 3:
+        import event_3 as e
+
+    global event
+    event = e
+
+
+def text_formater(string, screen_width=21, screen_height=6):
+
+    def line_formater(string, screen_width):
+        if len(string) <= screen_width: return string
+
+        stop_index = screen_width
+        while stop_index > 0 and not string[stop_index].isspace(): stop_index -= 1
+        if not stop_index: stop_index = screen_width
     
+        return string[:stop_index] + "\n" + line_formater(string[stop_index + 1:], screen_width)
+
+    def paragraph_formater(lines, screen_height):
+        if len(lines) < screen_height: return "\n".join(lines)
+
+        return "\n".join(lines[:screen_height]) + "\n  >>>\n\n" + paragraph_formater(lines[screen_height:], screen_height)
+
+    lines = line_formater(string, screen_width).splitlines()
+    return paragraph_formater(lines, screen_height).split("\n\n")
