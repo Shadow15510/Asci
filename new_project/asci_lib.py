@@ -45,7 +45,6 @@ class Asci:
         self.x = 10
         self.y = 5
         self.current_map = randint(1, 7)
-        print("Nouveau quartier :", self.current_map)
 
     def _cell_test(self, direction):
         # Left
@@ -109,14 +108,42 @@ class Asci:
             if cell_test == 1: self.y += 1
 
         if key in (1, 2, 3, 5):
-            if cell_test < 0: self._new_map()
+            # Exit the map
+            if cell_test < 0:
+                if self.outdoor: self._new_map()
+                else:
+                    self.outdoor = True
+                    self.x = 10
+                    self.y = 5
+
+            # Door
+            elif cell_test == 2:
+                self.outdoor = False
+                self.x = 10
+                self.y = 5
+
+            # PnJ
+            elif cell_test == 3:
+                pass
+
+            # Fight
+            elif cell_test == 4:
+                pass
+
+
 
         # Stat
         if key == 8:
-            pass
+            places = ("Palais", "Thyel", "Medecins", "Foret", "Bibliotheque", "Plage", "Village", "Bois")
+            print(f"""* * Statistiques * *\nExpérience .....: {self.xp}\nPoints de vie ..: {self.pv}\nQuartier actuel :\n... {places[self.current_map - 1]} (n°{self.current_map})\n * *             * * """)
+            input(" ")
 
         # Action
         if key == 7:
+            pass
+
+        # Teleportation
+        if key == 15510:
             pass
 
         # Quit
