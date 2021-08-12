@@ -16,7 +16,7 @@ class Screen:
 
     def load(self, value):
         self._data = [[" " for _ in range(self.width)] for _ in range(self.height)]
-        for y, line in enumerate(value.splitlines()[1:]):
+        for y, line in enumerate(value.split("\n")[1:]):
             for x, char in enumerate(line):
                 self._data[y][x] = char
 
@@ -28,11 +28,13 @@ class Screen:
 
     def display_text(self, string, final_input=True):
         for paragraph in text_formater(string):
-            print(paragraph)
-            if final_input: input()
+            if paragraph:
+                self.clear()
+                print(paragraph)
+                if final_input: input()
 
     def clear(self):
-        print("\n" * self.height)
+        print("\n" * (self.height))
 
 
 class Asci:
@@ -112,8 +114,8 @@ class Asci:
         # Stat
         if key == 8:
             places = ("Palais", "Thyel", "Medecins", "Foret", "Bibliotheque", "Plage", "Village", "Bois")
-            print(f"""* * Statistiques * *\nExpérience .....: {self.xp}\nPoints de vie ..: {self.pv}\nQuartier actuel :\n... {places[self.current_map - 1]} (n°{self.current_map})\n * *             * * """)
-            input(" ")
+            print("* * Statistiques * *\nExperience .....: {0}\nPoints de vie ..: {1}\nQuartier actuel :\n... {2} ({3})\n* *              * * ".format(self.xp, self.pv, places[self.current_map - 1], self.current_map))
+            input()
 
         # Teleportation
         if key == 15510 and self.xp > 28:
@@ -127,7 +129,8 @@ class Asci:
         # Quit
         if key == 9:
             stat = (self.xp, self.pv, self.current_map, self.outdoor)
-            print(f"Pour reprendre la partie, entrez le code :\n'{'.'.join([str(i) for i in stat])}'")
+            self.screen.clear()
+            print("Pour reprendre la\npartie, entrez :\nasci('{}')".format('.'.join([str(i) for i in stat])))
 
         # Interaction with map
         if key in (1, 2, 3, 5):
@@ -136,13 +139,13 @@ class Asci:
                 if self.outdoor:
                     self._new_map()
                 else:
-                    self.outdoor = True
+                    self.outdoor = 1
                     self.x = 10
                     self.y = 5
 
             # Door
             elif cell_test == 2:
-                self.outdoor = False
+                self.outdoor = 0
                 self.x = 10
                 self.y = 5
 
@@ -159,7 +162,6 @@ class Asci:
         self.xp += xp
         self.pv += pv
 
-        self.screen.clear()
         self.screen.display_text(text)
 
     def _fight(self):
@@ -185,7 +187,7 @@ class Asci:
             self.screen.display_text("Vous avez vaincu votre adversaire !")
         else:
             stat = (self.xp, 100, self.current_map, self.outdoor)
-            self.screen.display_text(f"Vous avez perdu... Code de la dernière sauvegarde :\n'{'.'.join([str(i) for i in stat])}'", False)
+            self.screen.display_text("Vous avez perdu... Code de la dernière sauvegarde :\n'{}'".format('.'.join([str(i) for i in stat])), False)
         
 
     def mainloop(self):
@@ -233,7 +235,11 @@ def text_formater(string, screen_width=21, screen_height=6):
     def paragraph_formater(lines, screen_height):
         if len(lines) < screen_height: return "\n".join(lines)
 
-        return "\n".join(lines[:screen_height]) + "\n  >>>\n\n" + paragraph_formater(lines[screen_height:], screen_height)
+        return "\n".join(lines[:screen_height]) + "\n\n" + paragraph_formater(lines[screen_height:], screen_height)
 
-    lines = line_formater(string, screen_width).splitlines()
+    lines = line_formater(string, screen_width).split("\n")
     return paragraph_formater(lines, screen_height).split("\n\n")
+
+
+def enumerate(subscriptable):
+    return [(i, subscriptable[i]) for i in range(len(subscriptable))]

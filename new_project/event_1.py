@@ -39,8 +39,8 @@ def get_dialogue(xp, pv, current_map, outdoor):
         "<2": [0, 0, "Hey ! Je suis Thyel, ami du Roi. Bienvenue dans Asci !"],
         "2": [3, 0, "Ah, te voila ! Tu verras, Asci est une ville speciale. Les quartiers ne sont pas les uns a cote des autres. Ils sont relies entre eux par des ponts aleatoires. Quand tu quittes un quartier, tu te retrouves aleatoirement dans un autre."],
         "5": [1, 0, "On murmure qu'il est possible d'echapper a cet aleatoire..."],
-        "6": [1, 0, "Bon, assez parlé, il est temps de t'equiper un minimum ! Tiens, prend cette dague, [>10] pour l'utiliser."],
-        "7": [0, 0, "Des maraudeurs s'en prennent aux visiteurs dans la foret. Reviens me voir après."],
+        "6": [1, 0, "Bon, assez parle, il est temps de t'equiper un minimum ! Tiens, prend cette dague, [>10] pour l'utiliser."],
+        "7": [0, 0, "Des maraudeurs s'en prennent aux visiteurs dans la foret. Reviens me voir apres."],
         
         "8+pv<100": [1, 25, "Ah mais tu es blesse ! Bon, je t'ai panse comme j'ai pu, mais si tu as besoin, il y a des medecins dans un quartier. Leur officine est entoure de barrieres."],
         "8": [1, 0, "Meme pas blesse ! Impressionnant !"],
