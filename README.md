@@ -220,4 +220,3 @@ def dialogue(xp, pv, carte_actuelle, x, y, stat):
 def mon_jeu():
     rpg_python = Asci(carte_monde, dialogue, 7, [])
     rpg_python.mainloop()
-```
