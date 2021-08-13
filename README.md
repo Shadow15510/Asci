@@ -86,7 +86,7 @@ Les listes sont, elles, de la forme :
 La question maintenant est de savoir comment relier les dialogues au PnJ. Vous êtes libre de mettre en place un système d'ID, Nous vous proposons un système peut-être plus simple : les coordonnées des PnJ. Nous allons ainsi avoir une fonction qui va ressembler à :
 ```
 def dialogue(xp, pv, carte_actuelle, x, y, stat):
-	# Pour des raisons de légèreté, on déclare un tuple avec les coordonnées
+	# Pour des raisons de clareté, on déclare un tuple avec les coordonnées
 	coords = (x, y)
 
 	# Si nous sommes en extérieur
@@ -139,7 +139,7 @@ Nous n'avons pas de maisons, juste un PnJ
 
 #### Exemple de fonction de dialogue
 
-Nous allons faire parler notre PnJ ! Et comme on est chaud, on va directement faire un petit dialogue. Pour bien séparer les réaction à la question du reste, je met un niveau d'indentation supplémentaire, ça ne change rien au comportement du code.
+Nous allons faire parler notre PnJ ! Et comme on est chaud, on va directement faire un petit dialogue. Pour bien séparer les réactions à la question du reste, je met un niveau d'indentation supplémentaire, ça ne change rien au comportement du code.
 ```
 def dialogue(xp, pv, carte_actuelle, x, y, stat):
 	coords = (x, y)
@@ -149,10 +149,10 @@ def dialogue(xp, pv, carte_actuelle, x, y, stat):
 			0: [0, 0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
 				1: [3, 0, "Je vais bien, merci !", False],
 				2: [3, 0, "Ow, desole...", False],
-				3: [4, 0, "He, reviens quand tu sera de meilleure humeur !", False],
+				3: [4, 0, "He, reviens quand tu seras de meilleure humeur !", False],
 
 			4: [2, 0, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
-			5: [1, 0, "Je vais y aller, appelle moi si tu as besoin ;)", False],
+			5: [1, 0, "Je vais y aller, appelles moi si tu as besoin ;)", False],
 			6: [1, 0, "A pluche o/", False],
 
 			"base": [0, 0, "Oui ?", False]
@@ -205,10 +205,10 @@ def dialogue(xp, pv, carte_actuelle, x, y, stat):
             0: [0, 0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
                 1: [3, 0, "Je vais bien, merci !", False],
                 2: [3, 0, "Ow, desole...", False],
-                3: [4, 0, "He, reviens quand tu sera de meilleure humeur !", False],
+                3: [4, 0, "He, reviens quand tu seras de meilleure humeur !", False],
 
             4: [2, 0, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
-            5: [1, 0, "Je vais y aller, appelle moi si tu as besoin ;)", False],
+            5: [1, 0, "Je vais y aller, appelles moi si tu as besoin ;)", False],
             6: [1, 0, "A pluche o/", False],
 
             "base": [0, 0, "Oui ?", False]
