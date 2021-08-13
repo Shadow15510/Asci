@@ -37,16 +37,16 @@ def get_dialogue(xp, pv, current_map, outdoor):
     elif not outdoor and current_map == 2:
         dialogue = {
         "<2": [0, 0, "Hey ! Je suis Thyel, ami du Roi. Bienvenue dans Asci !"],
-        "2": [3, 0, "Ah, te voila ! Tu verras, Asci est une ville speciale. Les quartiers ne sont pas les uns a cote des autres. Ils sont relies entre eux par des ponts aleatoires. Quand tu quittes un quartier, tu te retrouves aleatoirement dans un autre."],
-        "5": [1, 0, "On murmure qu'il est possible d'echapper a cet aleatoire..."],
-        "6": [1, 0, "Bon, assez parle, il est temps de t'equiper un minimum ! Tiens, prend cette dague, [>10] pour l'utiliser."],
+        "2": [3, 0, "Ah, te voila ! Tu verras, Asci est une ville speciale. Les quartiers ne sont pas les uns a cote des autres. Ils sont relies entre eux par des ponts aleatoires. Quand tu quittes un quartier, tu te retrouves aleatoirement dans un autre. >"],
+        "5": [1, 0, "On murmure qu'il est possible d'echapper a cet aleatoire... >"],
+        "6": [1, 0, "Bon, assez parle, il est temps de t'equiper un minimum ! Tiens, prend cette dague, [>10] pour l'utiliser. >"],
         "7": [0, 0, "Des maraudeurs s'en prennent aux visiteurs dans la foret. Reviens me voir apres."],
         
-        "8+pv<100": [1, 25, "Ah mais tu es blesse ! Bon, je t'ai panse comme j'ai pu, mais si tu as besoin, il y a des medecins dans un quartier. Leur officine est entoure de barrieres."],
-        "8": [1, 0, "Meme pas blesse ! Impressionnant !"],
+        "8+pv<100": [1, 25, "Ah mais tu es blesse ! Bon, je t'ai panse comme j'ai pu, mais si tu as besoin, il y a des medecins dans un quartier. >"],
+        "8": [1, 0, "Meme pas blesse ! Impressionnant ! >"],
         "9": [0, 0, "Je viens de recevoir un courrier du Roi : il t'attend au palais. Bon courage pour le trajet !"],
 
-        "15": [2, 0, "HEIN ?! Je ne savais meme pas que la bibliotheque avait un tel ouvrage ! Quelqu'un a usurpe mon nom !"],
+        "15": [2, 0, "HEIN ?! Je ne savais meme pas que la bibliotheque avait un tel ouvrage ! Quelqu'un a usurpe mon nom ! >"],
         "17": [0, 0, "Le Roi te confirmera que j'etais avec lui tout hier soir."],
 
         "base": [0, 0, "Hey, comment vas-tu ?"]
@@ -73,7 +73,8 @@ def get_dialogue(xp, pv, current_map, outdoor):
     # Bibliothèque
     elif not outdoor and current_map == 5:
         dialogue = {
-        "13": [2, 0, "Un ouvrage sur la teleportation ? Oui, je dois avoir ça... Je ne comprends pas, il devrait etre ici... Le dernier emprunt !? Ces ouvrages ne sortent pas d'ici. La derniere consultation ? J'ai du le reporter dans le registre, je vais regarder... C'est Thyel, hier, dans la soirée."],
+        "13": [1, 0, "Un ouvrage sur la teleportation ? Oui, je dois avoir ça... >"]
+        "14": [1, 0, "Je ne comprends pas, il devrait etre ici... Le dernier emprunt !? Ces ouvrages ne sortent pas d'ici. J'ai du le reporter la derniere consulatation dans le registre, je vais regarder... C'est Thyel, hier, dans la soirée."],
 
         "base": [0, 0, "Bonjour et bienvenue dans la bibliotheque d'Asci."]
         }

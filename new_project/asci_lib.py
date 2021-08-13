@@ -155,7 +155,13 @@ class Asci:
 
             # Fight
             elif cell_test == 4:
-                self._fight()
+                if self._fight():
+                    self.xp = event.get_interaction(self.xp, self.current_map)
+                    self.screen.display_text("Vous avez vaincu votre adversaire !")
+                else:
+                    stat = (self.xp, 100, self.current_map, self.outdoor)
+                    self.screen.display_text("Vous avez perdu... Code de la dernière sauvegarde :\n'{}'".format('.'.join([str(i) for i in stat])), False)
+        
 
     def _dialogue(self):
         xp, pv, text = event.get_dialogue(self.xp, self.pv, self.current_map, self.outdoor)
@@ -182,13 +188,7 @@ class Asci:
             if player_pa > enemy_pa: enemy_pv -= player_pa
             else: self.pv -= enemy_pa
 
-        if self.pv > 0:
-            self.xp = event.get_interaction(self.xp, self.current_map)
-            self.screen.display_text("Vous avez vaincu votre adversaire !")
-        else:
-            stat = (self.xp, 100, self.current_map, self.outdoor)
-            self.screen.display_text("Vous avez perdu... Code de la dernière sauvegarde :\n'{}'".format('.'.join([str(i) for i in stat])), False)
-        
+        return self.pv > 0
 
     def mainloop(self):
         key = key_buffer = 0
