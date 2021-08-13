@@ -41,7 +41,7 @@ dialogue = {
 
     "16:2": {
         0: [1, "Hey, bienvenue dans la map de test d'Asci !", False],
-        1: [0, "Comment vas-tu aujourd'hui ? 1. Très bien, merci ! Et vous-même ? 2. La ferme le vieux ! ", True],
+        1: [0, "Comment vas-tu aujourd'hui ? 1. Tres bien, merci ! Et vous-meme ? 2. La ferme le vieux ! ", True],
             2: [2, "Je vais bien ^.^", False],
             3: [0, "Oh, insultant personnage !", False],
 
