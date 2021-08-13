@@ -55,39 +55,51 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, dialogues, end_game, stat, data=[0, 100, 0, 0, 0], screen_width=21, screen_height=6):
+    def __init__(self, maps, fn_dialogue, end_game, stat, data=[0, 100, 0, 0, 0], screen_width=21, screen_height=6):
         # Load save ; data = [XP, PV, map_id, x, y]
         self.data = data
         self.stat = stat
 
-        # Load data:
-        self.world = maps[0]
-        self.houses = [House(i[0], i[1], i[2]) for i in maps[1:]]
-        self.dialogues = dialogues
+        # Load data
+        self.maps = maps
         self.end_game = end_game
+
+        # Custom functions
+        self.get_dialogue = fn_dialogue
 
         # Screen configuration
         self.screen = Screen(maps[data[2]], screen_width, screen_height)
         self.map_width, self.map_height = self.screen.get_map_size()
 
+    def _looked_case(self, direction):
+        # Left
+        if direction == 1:
+            return self.data[3] + 9, self.data[4] + 3
+
+        # Right
+        elif direction == 3:
+            return self.data[3] + 11, self.data[4] + 3
+
+        # Up
+        elif direction == 5:
+            return self.data[3] + 10, self.data[4] + 2
+
+        # Down
+        elif direction == 2:
+            return self.data[3] + 10, self.data[4] + 4
+
+        return self.data[3] + 10, self.data[4] + 3
 
     def _cell_test(self, direction):
-        # Left
         if direction == 1:
             if self.data[-2] + 9 < 0: return -1
             else: cell = self.screen.get_cell(9, 3)
-
-        # Right
         if direction == 3:
             if self.data[-2] + 11 >= self.map_width: return -1
             else: cell = self.screen.get_cell(11, 3)
-
-        # Up
         if direction == 5:
             if self.data[-1] + 2 < 0: return -1
             else: cell = self.screen.get_cell(10, 2)
-
-        # Down
         if direction == 2:
             if self.data[-1] + 4 >= self.map_height: return -1
             else: cell = self.screen.get_cell(10, 4)
@@ -102,31 +114,14 @@ class Asci:
         # Interaction with map
         if key in (1, 3, 5, 2):
             cell_test = self._cell_test(key)
-
-            # Exit house
-            if cell_test < 0 and self.data[2]:
-                # Get the current house
-                house = self.houses[self.data[2] - 1]
-                # Restore the world map
-                self.data[2] = 0
-                self.screen.set_world(self.world)
-                # Restore the player's coordinates
-                self.data[-2], self.data[-1] = house.door_coords[0] - 10, house.door_coords[1] - 3
             
             # Enter house
-            if cell_test == 2:
-                # Search the house
-                house_id = 0
-                for house in self.houses:
-                    if (self.data[-2] + 10, self.data[-1] + 3) == house.door_coords:
-                    # Initialise map and player's coordinates
-                        self.data[-2], self.data[-1] = house.exit_coords[0] - 10, house.exit_coords[1] - 3
-                        self.screen.set_world(house.plan)
-                        self.data[2] = house_id + 1
-                        break
-                    house_id += 1
-
-       
+            if cell_test == 2 or (self.data[2] and cell_test < 0):
+                self.data[2], self.data[3], self.data[4] = self._get_map(key)
+                if self.data[2]:
+                    self.screen.set_world(self.maps[self.data[2]][0])
+                else:
+                    self.screen.set_world(self.maps[0])
 
             # PnJ
             elif cell_test == 3:
@@ -137,16 +132,13 @@ class Asci:
                 pass
 
         # Left
-        if key == 1 and cell_test == 1: self.data[-2] -= 1
-
+        if key == 1 and cell_test == 1: self.data[3] -= 1
         # Right
-        if key == 3 and cell_test == 1: self.data[-2] += 1
-
+        if key == 3 and cell_test == 1: self.data[3] += 1
         # Up
-        if key == 5 and cell_test == 1: self.data[-1] -= 1
-
+        if key == 5 and cell_test == 1: self.data[4] -= 1
         # Down
-        if key == 2 and cell_test == 1: self.data[-1] += 1
+        if key == 2 and cell_test == 1: self.data[4] += 1
 
         # Stat
         if key == 8:
@@ -166,32 +158,38 @@ class Asci:
         # /!\ TEST /!\ #
 
     def _chatting(self, direction):
-        if direction == 1:
-            x, y = self.data[-2] + 9, self.data[-1] + 3
+        x, y = self._looked_case(direction)
 
-        if direction == 3:
-            x, y = self.data[-2] + 11, self.data[-1] + 3
-
-        elif direction == 5:
-            x, y = self.data[-2] + 10, self.data[-1] + 2
-
-        elif direction == 2:
-            x, y = self.data[-2] + 10, self.data[-1] + 4
-
-        if "{0}:{1}:{2}".format(self.data[2], x, y) in self.dialogues:
-            dialogue = self.dialogues["{0}:{1}:{2}".format(self.data[2], x, y)]
-            if self.data[0] in dialogue:
-                dialogue = dialogue[self.data[0]]
-            else:
-                dialogue = dialogue["base"]
-        else:
-            dialogue = self.dialogues["base"]
-                
+        # Read the dialogue
+        dialogue = self.get_dialogue(self.data[0], self.data[1], self.data[2], x, y, self.stat)
+        if type(dialogue) == dict:
+            if self.data[0] in dialogue: dialogue = dialogue[self.data[0]]
+            else: dialogue = dialogue["base"]
+        
+        # XP and PV modification
         self.data[0] += dialogue[0]
+        self.data[1] += dialogue[1]
 
-        answer_selected = self.screen.display_text(dialogue[-2])
-        if dialogue[-1]: self.data[0] += convert(answer_selected)
+        # Stat modification
+        for index in range(len(dialogue[4:])):
+            stat[index] += dialogue[4 + index]
 
+        answer_selected = self.screen.display_text(dialogue[2])
+        if dialogue[3]: self.data[0] += convert(answer_selected)
+
+    def _get_map(self, direction):
+        x, y = self._looked_case(direction)
+        current_map = self.data[2]
+
+        if current_map:
+            if (x, y) == self.maps[current_map][2]:
+                return 0, self.maps[current_map][1][0] - 10, self.maps[current_map][1][1] - 3
+        else:
+            for index in range(1, len(self.maps)):
+                if (x, y) == self.maps[index][1]:
+                    return index, self.maps[index][2][0] - 10, self.maps[index][2][1] - 3
+
+        return current_map, self.data[3], self.data[4]
 
     def mainloop(self):
         key = key_buffer = 0
@@ -206,13 +204,6 @@ class Asci:
             else: key_buffer = key
 
             self._keyboard(key)
-
-
-class House:
-    def __init__(self, plan, door_coords, exit_coords):
-        self.plan = plan
-        self.door_coords = door_coords
-        self.exit_coords = exit_coords
 
 
 def convert(string):
