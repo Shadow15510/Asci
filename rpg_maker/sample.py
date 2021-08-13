@@ -18,16 +18,11 @@ r"""
 +------------------------------+
 |                              |
 |                              |
-|                              |
-|                              |
-|                              |
-|                              |
-|                              |
 |   *                          |
 |                              |
 |                              |
-+--| |-------------------------+
-""", (1, 3), (4, 11))
++--|^|-------------------------+
+""", (1, 3), (4, 6))
 )
 
 
@@ -46,8 +41,12 @@ def get_dialogue(xp, pv, current_map, x, y, stat):
             "base": [0, 0, "Bonjour, besoin d'aide ?", False],
             }
 
+        elif coords == (24, 4):
+            if pv >= 100: return [0, 50, "Tsst, est-ce que je tape sur des gens moi ? Bah alors ? J'ai panse tes plaies, mais fait gaffe a toi...", False]
+            else: return [0, 0, "Tu es en pleine forme !", False]
+
     elif current_map == 1:
-        if coords == (4, 8): return {
+        if coords == (4, 3): return {
             3: [0, 0, "Tsst, tu as encore insulte quelqu'un ? 1. Oui... 2. Hein ? Quoi ?", True],
                 4: [0, 0, "C'est pas tres malin, tu sais ?", False],
                 5: [0, 0, "Je n'aime pas les menteurs. Sort de chez moi.", False],
