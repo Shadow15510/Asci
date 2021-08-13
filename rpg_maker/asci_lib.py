@@ -130,7 +130,7 @@ class Asci:
 
             # PnJ
             elif cell_test == 3:
-                self._chatting()
+                self._chatting(key)
 
             # Fight
             elif cell_test == 4:
@@ -165,9 +165,21 @@ class Asci:
             input()
         # /!\ TEST /!\ #
 
-    def _chatting(self):
-        if "{0}:{1}".format(self.data[-2] + 10, self.data[-1] + 3) in self.dialogues:
-            dialogue = self.dialogues["{0}:{1}".format(self.data[-2] + 10, self.data[-1] + 3)]
+    def _chatting(self, direction):
+        if direction == 1:
+            x, y = self.data[-2] + 9, self.data[-1] + 3
+
+        if direction == 3:
+            x, y = self.data[-2] + 11, self.data[-1] + 3
+
+        elif direction == 5:
+            x, y = self.data[-2] + 10, self.data[-1] + 2
+
+        elif direction == 2:
+            x, y = self.data[-2] + 10, self.data[-1] + 4
+
+        if "{0}:{1}:{2}".format(self.data[2], x, y) in self.dialogues:
+            dialogue = self.dialogues["{0}:{1}:{2}".format(self.data[2], x, y)]
             if self.data[0] in dialogue:
                 dialogue = dialogue[self.data[0]]
             else:

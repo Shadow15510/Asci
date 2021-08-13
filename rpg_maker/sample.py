@@ -23,7 +23,7 @@ r"""
 |                              |
 |                              |
 |                              |
-|                              |
+|   *                          |
 |                              |
 |                              |
 +--|^|-------------------------+
@@ -39,7 +39,7 @@ r"""
 dialogue = {
     "base": [0, "Hmmm ?", False],
 
-    "16:2": {
+    "0:16:1": {
         0: [1, "Hey, bienvenue dans la map de test d'Asci !", False],
         1: [0, "Comment vas-tu aujourd'hui ? 1. Tres bien, merci ! Et vous-meme ? 2. La ferme le vieux ! ", True],
             2: [2, "Je vais bien ^.^", False],
@@ -47,6 +47,14 @@ dialogue = {
 
         4: [0, "Belle journée, n'est-ce pas ?", False],
         "base": [0, "Bonjour, besoin d'aide ?", False],
+    },
+
+    "1:4:8": {
+        3: [0, "Tsst, tu as encore insulte quelqu'un ? 1. Oui... 2. Hein ? Quoi ?", True],
+            4: [0, "C'est pas tres malin, tu sais ?", False],
+            5: [0, "Je n'aime pas les menteurs. Sort de chez moi.", False],
+
+        "base": [0, "Oui ?", False] 
     }
 }
 
