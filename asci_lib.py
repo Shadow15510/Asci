@@ -200,7 +200,6 @@ class Asci:
     def mainloop(self):
         key = key_buffer = 0
         while key != 9 and self.stat[0] > 0 and self.data[0] < self.end_game:
-            # self.screen.clear_data()
             self.screen.set_data(self.data[-2:])
 
             self.screen.set_cell(10, 3, "@")
