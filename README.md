@@ -31,7 +31,7 @@ Pour se diriger :
  - 5 : haut
 
 Accéder aux statistiques :
- - 8
+ - 7
 
 Quitter le jeu :
  - 9
@@ -74,7 +74,7 @@ Par simplicité, j'utiliserai un dictionnaire par PnJ, vous faites bien comme vo
 
 Concrètement, votre fonction va ressembler à :
 ```
-def evenement(xp, carte_actuelle, x, y, stat):
+def evenements(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     # Si on est en extérieur

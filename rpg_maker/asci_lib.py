@@ -140,7 +140,7 @@ class Asci:
         if key == 2 and cell_test == 1: self.data[3] += 1
 
         # Stat
-        if key == 8:
+        if key == 7:
             self.screen.clear()
             self._game_stat(self.stat)
             input()
@@ -150,7 +150,7 @@ class Asci:
             self.screen.clear()
 
         # /!\ TEST /!\ #
-        if key == 7:
+        if key == 8:
             print(self.data)
             input()
         # /!\ TEST /!\ #
