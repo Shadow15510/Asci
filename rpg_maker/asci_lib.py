@@ -66,7 +66,7 @@ class Asci:
 
         # Screen configuration
         self.screen = Screen(screen_width, screen_height)
-        if maps[data[1]]: self.screen.set_world(maps[data[1]][0])
+        if data[1]: self.screen.set_world(maps[data[1]][0])
         else: self.screen.set_world(maps[0])
         self.map_width, self.map_height = self.screen.get_map_size()
 
