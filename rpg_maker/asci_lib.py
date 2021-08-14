@@ -1,5 +1,3 @@
-from random import randint
-
 class Screen:
     def __init__(self, world, screen_width=21, screen_height=6):
         # Screen configuration
@@ -55,10 +53,10 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, fn_dialogue, end_game, stat, data=[0, 100, 0, 0, 0], screen_width=21, screen_height=6):
+    def __init__(self, maps, fn_events, fn_fight, fn_stat, end_game, stat, data=[0, 0, 0, 0], screen_width=21, screen_height=6):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data
-        if not stat:
+        if not stat or type(stat) != list:
             self.stat = [100]
         else:
             self.stat = stat
@@ -68,7 +66,9 @@ class Asci:
         self.end_game = end_game
 
         # Custom functions
-        self.get_dialogue = fn_dialogue
+        self._game_event = fn_events
+        self._game_fight = fn_fight
+        self._game_stat = fn_stat
 
         # Screen configuration
         self.screen = Screen(maps[data[2]], screen_width, screen_height)
@@ -77,21 +77,21 @@ class Asci:
     def _looked_case(self, direction):
         # Left
         if direction == 1:
-            return self.data[3] + 9, self.data[4] + 3
+            return self.data[2] + 9, self.data[3] + 3
 
         # Right
         elif direction == 3:
-            return self.data[3] + 11, self.data[4] + 3
+            return self.data[2] + 11, self.data[3] + 3
 
         # Up
         elif direction == 5:
-            return self.data[3] + 10, self.data[4] + 2
+            return self.data[2] + 10, self.data[3] + 2
 
         # Down
         elif direction == 2:
-            return self.data[3] + 10, self.data[4] + 4
+            return self.data[2] + 10, self.data[3] + 4
 
-        return self.data[3] + 10, self.data[4] + 3
+        return self.data[2] + 10, self.data[3] + 3
 
     def _cell_test(self, direction):
         if direction == 1:
@@ -119,34 +119,34 @@ class Asci:
             cell_test = self._cell_test(key)
             
             # Enter house
-            if cell_test == 2 or (self.data[2] and cell_test < 0):
-                self.data[2], self.data[3], self.data[4] = self._get_map(key)
-                if self.data[2]:
-                    self.screen.set_world(self.maps[self.data[2]][0])
+            if cell_test == 2 or (self.data[1] and cell_test < 0):
+                self.data[1], self.data[2], self.data[3] = self._get_map(key)
+                if self.data[1]:
+                    self.screen.set_world(self.maps[self.data[1]][0])
                 else:
                     self.screen.set_world(self.maps[0])
 
-            # PnJ
+            # Talk
             elif cell_test == 3:
-                self._chatting(key)
+                self._talk(key)
 
             # Fight
             elif cell_test == 4:
-                pass
+                self._fight(key)
 
         # Left
-        if key == 1 and cell_test == 1: self.data[3] -= 1
+        if key == 1 and cell_test == 1: self.data[2] -= 1
         # Right
-        if key == 3 and cell_test == 1: self.data[3] += 1
+        if key == 3 and cell_test == 1: self.data[2] += 1
         # Up
-        if key == 5 and cell_test == 1: self.data[4] -= 1
+        if key == 5 and cell_test == 1: self.data[3] -= 1
         # Down
-        if key == 2 and cell_test == 1: self.data[4] += 1
+        if key == 2 and cell_test == 1: self.data[3] += 1
 
         # Stat
         if key == 8:
             self.screen.clear()
-            print("<*> Statistiques <*>\n")
+            self._game_stat(self.stat)
             input()
 
         # Quit
@@ -156,32 +156,41 @@ class Asci:
 
         # /!\ TEST /!\ #
         if key == 7:
-            print(self.data[-2:])
+            print(self.data)
             input()
         # /!\ TEST /!\ #
 
-    def _chatting(self, direction):
+    def _talk(self, direction):
         x, y = self._looked_case(direction)
 
         # Read the dialogue
-        dialogue = self.get_dialogue(self.data[0], self.data[1], self.data[2], x, y, self.stat)
-        if type(dialogue) == dict:
-            if self.data[0] in dialogue: dialogue = dialogue[self.data[0]]
-            else: dialogue = dialogue["base"]
+        event = read_event(self.data[0], self._game_event(self.data[0], self.data[1], x, y, self.stat))
         
-        # XP and PV modification
-        self.data[0] += dialogue[0]
+        # XP and stat modification
+        self.data[0] += event.xp_earned
+        for index in range(len(event.stat)):
+            self.stat[index] += event.stat[index]
 
-        # Stat modification
-        for index in range(len(dialogue[3:])):
-            stat[index] += dialogue[3 + index]
+        answer_selected = convert(self.screen.display_text(event.text))
+        if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
 
-        answer_selected = self.screen.display_text(dialogue[1])
-        if dialogue[2]: self.data[0] += convert(answer_selected)
+    def _fight(self, direction):
+        x, y = self._looked_case(direction)
+
+        # Run the fight
+        if self._game_fight(self.data[0], self.data[1], x, y, self.stat):
+            event = read_event(self.data[0], self._game_event(self.data[0], self.data[1], x, y, self.stat))
+
+            # XP and stat modification
+            self.data[0] += event.xp_earned
+            for index in range(len(event.stat)):
+                self.stat[index] += event.stat[index]
+
+            self.screen.display_text(event.text)
 
     def _get_map(self, direction):
         x, y = self._looked_case(direction)
-        current_map = self.data[2]
+        current_map = self.data[1]
 
         if current_map:
             if (x, y) == self.maps[current_map][2]:
@@ -191,7 +200,7 @@ class Asci:
                 if (x, y) == self.maps[index][1]:
                     return index, self.maps[index][2][0] - 10, self.maps[index][2][1] - 3
 
-        return current_map, self.data[3], self.data[4]
+        return current_map, self.data[2], self.data[3]
 
     def mainloop(self):
         key = key_buffer = 0
@@ -206,6 +215,14 @@ class Asci:
             else: key_buffer = key
 
             self._keyboard(key)
+
+
+class Event:
+    def __init__(self, xp_earned, text, answer=0, *stat):
+        self.xp_earned = xp_earned
+        self.text = text
+        self.answer = answer
+        self.stat = stat
 
 
 def convert(string):
@@ -231,3 +248,14 @@ def text_formater(string, screen_width=21, screen_height=6):
 
     lines = line_formater(string, screen_width).split("\n")
     return paragraph_formater(lines, screen_height).split("\n\n")
+
+
+def read_event(xp, event):
+    if type(event) == dict:
+        if xp in event: event = event[xp]
+        else: event = event["base"]
+
+    if type(event) != list:
+        raise TypeError("event is of type {} instead of list".format(type(event)))
+
+    return Event(*event)

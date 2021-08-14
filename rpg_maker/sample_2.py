@@ -1,39 +1,76 @@
 from asci_lib import *
 
 
-carte_monde = (
+cartes = (
 r"""
  _         ###
 /o\__     #####
-|  <>\     ###  
-|____|     /_\
+|_ <>\     ###  
+|^|__|     /_\
 
   *
 
 
-|==|==|==|==|==|==|==|""",)
+|==|==|==|==|==|==|==|""",
+
+(r"""
++--+--+--------+--+--+
+|  |  |  *     |  | *|
+|  +  +        +  +  |
+|                    |
+|  +  +        +  +  |
++--/  \--------/  \--+
+|                    |
++---|^|--------------+""",
+(1, 3), (5, 7)
+))
 
 
-def dialogue(xp, pv, carte_actuelle, x, y, stat):
+def evenements(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     if carte_actuelle == 0:
         if coords == (2, 5): return {
-            0: [0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
-                1: [3, "Je vais bien, merci !", False],
-                2: [3, "Ow, desole...", False],
-                3: [4, "He, reviens quand tu sera de meilleure humeur !", False],
+            0: [0, "Hey ! J'ai entendu du bruit dans la maison, mais je n'ose pas rentrer... 1. Rien entendu. 2. Je vais jeter un oeil.", 2],
+                1: [3, "Etes-vous sourd ?"],
+                2: [1, "J'etais sur que vous m'ecouteriez !"],
 
-            4: [2, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
-            5: [1, "Je vais y aller, appelle moi si tu as besoin ;)", False],
-            6: [1, "A pluche o/", False],
+            3: [2, "C'est la maison juste au nord."],
+            4: [0, "Enfin, vous entendez bien du bruit la ? Et si c'etait un voleur ? 1. Bon ok j'y vais. 2. Mais foutez moi la paix !", 2],
+                6: [0, "..."],
 
-            "base": [0, "Oui ?", False]
+            5: [2, "Soyez prudent !"],
+
+            12: [1, "J'etais sur d'avoir entendu un truc !"],
+            "base": [0, "Vous avez entendu quelque chose ?"]
             }
 
-    return [0, "Hmm ?", False]
+    elif carte_actuelle == 1:
+        if coords == (9, 1): return {
+            7: [0, "Je crois que le voleur est dans la piece d'a cote... 1. Je vais regarder. 2. Debrouillez-vous !", 2],
+                8: [2, "Merci !"],
+                9: [0, "Pleutre ! Hors de ma vue !"],
+
+            11: [1, "Ah, merci !"],
+            "base": [0, "J'ai peur de sortir de cette piece"]
+            }
+
+        elif coords == (20, 1): return {
+                10: [1, "Ciel, je suis fait !"],
+                "base": [0, "File avant que je ne te detrousse !"]
+            }
+
+    return [0, "Hmm ?"]
+
+
+def combat(xp, carte_actuelle, x, y, stat):
+    pass
+
+def affichage_statistique(stat):
+    print("Statistiques :")
+    print("Points de Vie : {}".format(stat[0]))
 
 
 def mon_jeu():
-    rpg_python = Asci(carte_monde, dialogue, 7, [])
+    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, 13, [100])
     rpg_python.mainloop()
