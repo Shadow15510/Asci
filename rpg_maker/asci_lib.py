@@ -56,9 +56,12 @@ class Screen:
 
 class Asci:
     def __init__(self, maps, fn_dialogue, end_game, stat, data=[0, 100, 0, 0, 0], screen_width=21, screen_height=6):
-        # Load save ; data = [XP, PV, map_id, x, y]
+        # Load save ; data = [XP, map_id, x, y]
         self.data = data
-        self.stat = stat
+        if not stat:
+            self.stat = [100]
+        else:
+            self.stat = stat
 
         # Load data
         self.maps = maps
@@ -143,7 +146,7 @@ class Asci:
         # Stat
         if key == 8:
             self.screen.clear()
-            print("<*> Statistiques <*>\nExperience ...: {0}\nPoints de vie : {1}\n<*> ------------ <*>".format(self.data[0], self.data[1]))
+            print("<*> Statistiques <*>\n")
             input()
 
         # Quit
@@ -168,14 +171,13 @@ class Asci:
         
         # XP and PV modification
         self.data[0] += dialogue[0]
-        self.data[1] += dialogue[1]
 
         # Stat modification
-        for index in range(len(dialogue[4:])):
-            stat[index] += dialogue[4 + index]
+        for index in range(len(dialogue[3:])):
+            stat[index] += dialogue[3 + index]
 
-        answer_selected = self.screen.display_text(dialogue[2])
-        if dialogue[3]: self.data[0] += convert(answer_selected)
+        answer_selected = self.screen.display_text(dialogue[1])
+        if dialogue[2]: self.data[0] += convert(answer_selected)
 
     def _get_map(self, direction):
         x, y = self._looked_case(direction)
@@ -193,7 +195,7 @@ class Asci:
 
     def mainloop(self):
         key = key_buffer = 0
-        while key != 9 and self.data[1] > 0 and self.data[0] < self.end_game:
+        while key != 9 and self.stat[0] > 0 and self.data[0] < self.end_game:
             self.screen.clear_data()
             self.screen.set_data(self.data[-2:])
 

@@ -76,10 +76,9 @@ dialogues = {
 
 Les listes sont, elles, de la forme :
 ```
-[xp_gagne, pv_gagne, "le texte du dialogue", booleen, ...]
+[xp_gagne, "le texte du dialogue", booleen, ...]
 ```
 `xp_gagne` correspond aux nombres de points d'expérience gagné lors de la lecture de ce dialogue.
-`pv_gagne` même principe qu'avec l'XP, mais avec les points de vie.
 `booleen` détermine s'il s'agit d'un monologue du PnJ ou si vous pouvez répondre au PnJ.
 `...` correspond à des modificateurs des stats. Vous pouvez tout à fait les oublier en première utilisation
 
@@ -101,9 +100,9 @@ def dialogue(xp, pv, carte_actuelle, x, y, stat):
 		...
 
 	# Si le PnJ est bien sur la map, mais n'a aucun dialogue d'assigné :
-	return [0, 0, "Hmm ?", False]
+	return [0, "Hmm ?", False]
 ```
-Vous pouvez également créer des dialogues. Pour cela, il vous suffit de mettre le booleen sur `True` et de mettre les réponses possibles dans le corps du dialogue, par exemple : `[0, 0, "Ceci est une question ? 1. Réponse 1 2. Réponse 2", True]`. Le numéro de la réponse correspond au nombre de point d'expérience qu'elle rapporte, cela vous permet de gérer les différents cas dans al suite du dialogue.
+Vous pouvez également créer des dialogues. Pour cela, il vous suffit de mettre le booleen sur `True` et de mettre les réponses possibles dans le corps du dialogue, par exemple : `[0, "Ceci est une question ? 1. Réponse 1 2. Réponse 2", True]`. Le numéro de la réponse correspond au nombre de point d'expérience qu'elle rapporte, cela vous permet de gérer les différents cas dans al suite du dialogue.
 
 #### Finalisation
 
@@ -112,10 +111,10 @@ Il reste à faire une petite fonction qui va créer un "modèle" de jeu de rôle
 La fonction est vraiment triviale :
 ```
 def mon_jeu():
-	rpg_python = Asci(carte_monde, dialogue, 10, [])
+	rpg_python = Asci(carte_monde, dialogue, 10, [100])
 	rpg_python.mainloop()
 ```
-Les deux premiers arguments `carte_monde` et `dialogue` ont déjà été vu. Le `10` correspond aux nombres de points d'expérience au bout duquel le programme s'arrête, il s'agit de la fin de la partie si vous voulez. La liste passée en dernier argument correspondent aux stats.
+Les deux premiers arguments `carte_monde` et `dialogue` ont déjà été vu. Le `10` correspond aux nombres de points d'expérience au bout duquel le programme s'arrête, il s'agit de la fin de la partie si vous voulez. La liste passée en dernier argument correspondent aux stats, vous devez impérativement mettre les points de vie de votre personnage.
 
 ### Exemples et astuces
 
@@ -142,23 +141,23 @@ Nous n'avons pas de maisons, juste un PnJ
 Nous allons faire parler notre PnJ ! Et comme on est chaud, on va directement faire un petit dialogue. Pour bien séparer les réactions à la question du reste, je met un niveau d'indentation supplémentaire, ça ne change rien au comportement du code.
 ```
 def dialogue(xp, pv, carte_actuelle, x, y, stat):
-	coords = (x, y)
+    coords = (x, y)
 
-	if carte_actuelle == 0:
-		if coords == (2, 5): return {
-			0: [0, 0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
-				1: [3, 0, "Je vais bien, merci !", False],
-				2: [3, 0, "Ow, desole...", False],
-				3: [4, 0, "He, reviens quand tu seras de meilleure humeur !", False],
+    if carte_actuelle == 0:
+        if coords == (2, 5): return {
+            0: [0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
+                1: [3, "Je vais bien, merci !", False],
+                2: [3, "Ow, desole...", False],
+                3: [4, "He, reviens quand tu sera de meilleure humeur !", False],
 
-			4: [2, 0, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
-			5: [1, 0, "Je vais y aller, appelles moi si tu as besoin ;)", False],
-			6: [1, 0, "A pluche o/", False],
+            4: [2, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
+            5: [1, "Je vais y aller, appelle moi si tu as besoin ;)", False],
+            6: [1, "A pluche o/", False],
 
-			"base": [0, 0, "Oui ?", False]
-			}
+            "base": [0, "Oui ?", False]
+            }
 
-	return [0, 0, "Hmm ?", False]
+    return [0, "Hmm ?", False]
 ```
 Pour mettre en place vos dialogues (parce que j'espère que vous aurez un peu plus qu'un seul PnJ) faire un arbre de progression de l'XP peut être une bonne idée ;) je vais essayer de le faire en ASCII-art pour vous montrer, mais avec une feuille et un stylo c'est plus simple.
 ```
@@ -202,19 +201,19 @@ def dialogue(xp, pv, carte_actuelle, x, y, stat):
 
     if carte_actuelle == 0:
         if coords == (2, 5): return {
-            0: [0, 0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
-                1: [3, 0, "Je vais bien, merci !", False],
-                2: [3, 0, "Ow, desole...", False],
-                3: [4, 0, "He, reviens quand tu seras de meilleure humeur !", False],
+            0: [0, "Coucou ! Comment ca va ? 1. Ca va, et toi ? 2. Bof... 3. Je t'emmerde.", True],
+                1: [3, "Je vais bien, merci !", False],
+                2: [3, "Ow, desole...", False],
+                3: [4, "He, reviens quand tu sera de meilleure humeur !", False],
 
-            4: [2, 0, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
-            5: [1, 0, "Je vais y aller, appelles moi si tu as besoin ;)", False],
-            6: [1, 0, "A pluche o/", False],
+            4: [2, "Bon et bien, je crois bien que cette premiere carte s'est bien passee !", False],
+            5: [1, "Je vais y aller, appelle moi si tu as besoin ;)", False],
+            6: [1, "A pluche o/", False],
 
-            "base": [0, 0, "Oui ?", False]
+            "base": [0, "Oui ?", False]
             }
 
-    return [0, 0, "Hmm ?", False]
+    return [0, "Hmm ?", False]
 
 
 def mon_jeu():
