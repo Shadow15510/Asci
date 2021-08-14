@@ -1,16 +1,9 @@
 class Screen:
-    def __init__(self, world, screen_width=21, screen_height=6):
+    def __init__(self, screen_width=21, screen_height=6):
         # Screen configuration
         self.screen_width = screen_width
         self.screen_height = screen_height
         self._data = [[" " for _ in range(screen_width)] for _ in range(screen_height)]
-
-        # Load map data
-        self.set_world(world)
-
-
-    def clear_data(self):
-        self._data = [[" " for _ in range(self.screen_width)] for _ in range(self.screen_height)]
 
     def clear(self):
         print("\n" * self.screen_height)
@@ -43,7 +36,8 @@ class Screen:
             if paragraph:
                 self.clear()
                 print(paragraph)
-                return input(">")
+                last_input = input(">")
+        return last_input
 
     def get_cell(self, x, y):
         return self._data[y][x]
@@ -71,7 +65,8 @@ class Asci:
         self._game_stat = fn_stat
 
         # Screen configuration
-        self.screen = Screen(maps[data[2]], screen_width, screen_height)
+        self.screen = Screen(screen_width, screen_height)
+        self.screen.set_world(maps[data[2]])
         self.map_width, self.map_height = self.screen.get_map_size()
 
     def _looked_case(self, direction):
@@ -205,7 +200,7 @@ class Asci:
     def mainloop(self):
         key = key_buffer = 0
         while key != 9 and self.stat[0] > 0 and self.data[0] < self.end_game:
-            self.screen.clear_data()
+            # self.screen.clear_data()
             self.screen.set_data(self.data[-2:])
 
             self.screen.set_cell(10, 3, "@")

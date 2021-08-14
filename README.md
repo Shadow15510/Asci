@@ -300,3 +300,202 @@ La limite est à 13 xp comme on peut le voir sur l'arbre :
     +--2--3--+        +--9-X
 ```
 les `X` symbolise les impasses.
+
+Le fichier complet est disponible sous le nom `rpg_maker/sample_2.py`
+
+#### Exemple de manipulation avancées
+
+Maintenant que vous êtes bien chaud, on va commencer les choses sérieuses. Enfin "sérieuses" je vous propose de faire pas à pas un petit jeu avec disons une quête et quelques mécaniques un peu bidon (ça reste un exemple). On peut déjà poser quelques petits trucs : 
+ - le joueur a des points de vie, d'attaque et de défense
+ - le scénario se résumera à une seule quête : tuer un adversaire. La quête peut être refusée.
+
+On peut déjà rapidement voir à quoi va ressembler l'arbre d'XP (j'en fait pas mal et je vous invite à en faire aussi, ça aide vraiment à voir le déroulement de l'histoire) :
+```
+    +--1--3--4--5-
+-0--+        
+    +--2-X
+```
+Pour expliquer rapidement : 
+ - 0 : début de l'histoire, énoncé de la quête
+ - 1 : quête acceptée
+ - 2 : quête refusée
+ - 3 : combat avec le bandit
+ - 4 : debrief avec le PnJ
+ - 5 : fin de la partie (limite de l'XP pour le jeu)
+
+Comme on est vraiment chaud, on va essayer de faire une map un peu plus joli que d'habitude avec des PnJ qui vont avoir des dialogues sans forcément avoir un rôle dans l'histoire, ça va être l'occasion de sortir un peu du modèle "1 PnJ = 1 dictionnaire d'évènements" et de vous rappeller que vous pouvez renvoyer un évènement seul.
+
+Allez ! On est parti avec une map et deux maisons :
+```
+cartes = (
+r"""
+ __                      
+/  \___    ###  *        
+|<>    \  #####    _     
+|^|____|   ###    / \    
+           /_\    |^|   *
+                         
+             __     __ 
+    $   ##  /  \___/  \  ##   
+       #### |<>     <>| ####
+        ##  |___|^|___|  ##
+        ||               ||""",
+
+(r"""
++--+--+--------+--+--+
+|  |  |        |  |  |
+|  +  +        +  +  |
+|                    |
+|  +  +        +  +  |
++--/ *\--------/  \--+
+|                    |
++---|^|--------------+""",
+(1, 3), (5, 7)),
+
+(r"""
++-------+
+|       |
+|       |
+|       |
++--|^|--+
+""",
+(19, 4), (4, 4))
+)
+```
+
+On va commencer par faire le PnJ qui n'a pas un rôle énorme dans le scénario. On va faire un médecin (comme y a du combat, c'est pratique de mettre un medecin dans la place). L'idée est simple : si le joueur a moins de 100 points de vie, il est blessé, donc on lui rajoute des points de vie avec un texte. Si il est en pleine forme, on le lui signale et on ne touche pas aux points de vie.
+
+On a donc la fonction qui ressemble à ça (je met des `...` au niveau des trucs pas encore définis): 
+```
+def evenements(xp, carte_actuelle, x, y, stat):
+    coords = (x, y)
+
+    if carte_actuelle == 0:
+        if coords == (...):
+            # Joueur blessé
+            if stat[0] < 100: return [0, "Oh, mais tu es blesse !", 0, 50]
+            else: return [0, "Reviens me voir quand tu seras blesse."]
+
+    return [0, "Hmm ?"]
+```
+
+Comme il s'agit d'un personnage très secondaire (voir inutile) on peut prendre pour médecin le PnJ tout à l'est, aux coordonnées `(24, 4)`. On prend alors l'autre PnJ pour le personnage qui donne la quête au joueur (aux coordonnées `(16, 1)`)
+
+On peut compléter notre fonction avec la proposition de la quête :
+```
+def evenements(xp, carte_actuelle, x, y, stat):
+    coords = (x, y)
+
+    if carte_actuelle == 0:
+        if coords == (24, 4):
+            if stat[0] < 100: return [0, "Oh, mais tu es blesse !", 0, 50]
+            else: return [0, "Reviens me voir quand tu seras blesse."]
+
+        elif coords == (16, 1): return {
+            "base": [0, "Alors ? T'en sorts-tu ?"],
+
+            0: [0, "J'ai une quete pour toi ! Un ami a moi a des problemes : un personnage louche traine autour de sa maison... Si tu pouvais l'en debarasser, il t'en serai reconnaissant. 1. Je m'en charge ! 2. Trouve quelqu'un d'autre.", 2],
+                1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, 0, 10, 10],
+                2: [2, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
+
+            3: [0, "Alors ? Il est mort ce bandit ?"],
+            4: [1, "Merci, tu as rendu un grand service a mon ami !"]
+        }
+
+    return [0, "Hmm ?"]
+```
+
+Maintenant il reste à programmer la fin du combat, en d'autre terme, si le joueur gagne le combat, la fonction `evenements` va être appelée, il faut donc renvoyer un petit texte qui signale que le combat est gagné et qui incrémente les points d'XP de 2 points (pour passer de 1 à 3). Le bandit est sur les coordonnées `(4, 7)`.
+```
+def evenements(xp, carte_actuelle, x, y, stat):
+    coords = (x, y)
+
+    if carte_actuelle == 0:
+        if coords == (24, 4):
+            if stat[0] < 100: return [0, "Oh, mais tu es blesse !", 0, 50]
+            else: return [0, "Reviens me voir quand tu seras blesse."]
+
+        elif coords == (16, 1): return {
+            "base": [0, "Alors ? T'en sorts-tu ?"],
+
+            0: [0, "J'ai une quete pour toi ! Un ami a moi a des problemes : un personnage louche traine autour de sa maison... Si tu pouvais l'en debarasser, il t'en serai reconnaissant. 1. Je m'en charge ! 2. Trouve quelqu'un d'autre.", 2],
+                1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, 0, 10, 10],
+                2: [2, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
+
+            3: [0, "Alors ? Il est mort ce bandit ?"],
+            4: [1, "Merci, tu as rendu un grand service a mon ami !"]
+        }
+
+        elif coords == (4, 7):
+            # Si le bandit vient d'être tué
+            if xp == 3: return [1, "Vous avez reussi la quete !"]
+
+            # Si le bandit est encore vivant
+            elif xp < 3: return [0, "Qu'est-ce que tu regardes toi ? Casses-toi !"]
+
+            # Si le bandit est déjà mort
+            else: return [0, "Vous regardez le cadavre froid du bandit."]
+
+    return [0, "Hmm ?"]
+```
+
+Il reste à faire une fonction pour les combats !
+Le principe est simple, la fonction va regarder de quel bandit il s'agit, si c'est le moment du combat, la fonction va lancer le combat, sinon elle déclare le combat gagnée ce qui va déclencher la fonction `evenements` (donc afficher le texte prévu juste avant)
+```
+def combats(xp, carte_actuelle, x, y, stat):
+    coords = (x, y)
+
+    if carte_actuelle == 0:
+        if coords == (4, 7):
+            if xp == 3: ennemi_stat = [75, randint(5, 10), randint(5, 10)]
+            else: return True
+
+    defense_temporaire = defense_temporaire_ennemi = 0
+    while stat[0] > 0 and ennemi_stat[0] > 0:
+
+        print("Vos PV : {0}\nPV ennemi : {1}".format(stat[0], ennemi_stat[0]))
+        print("<*> Actions <*>")
+        print("1. Attaquer")
+        print("2. Defendre")
+
+        action = int(input(">"))
+
+        defense_temporaire = 0
+        if action == 1:
+            pv = (stat[1] - ennemi_stat[2] - defense_temporaire_ennemi) + randint(-5, 10)
+            if pv < 0: pv = 0
+            ennemi_stat[0] -= pv
+        elif action == 2:
+            defense_temporaire = randint(1, 5)
+
+        defense_temporaire_ennemi = 0
+        if randint(1, 2) == 1:
+            pv = (ennemi_stat[1] - stat[2] - defense_temporaire) + randint(-5, 10)
+            if pv < 0: pv = 0
+            stat[0] -= pv
+        else:
+            defense_temporaire_ennemi = randint(1, 5)
+
+    return stat[0] > 0
+```
+
+Il reste à faire la fonction d'affichage des statistiques et la petite fonction d'appel :
+```
+def affichage_stat(stat):
+    pv, pa, pd = stat
+
+    print("<*> Statistiques <*>")
+    print("Points de vie .: {}".format(pv))
+    print("Points attaque : {}".format(pa))
+    print("Points defense : {}".format(pd))
+```
+et :
+```
+def mon_jeu():
+    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, [100, 0, 0])
+    rpg_python.mainloop()
+```
+Vous pouvez retrouver le fichier complet dans `rpg_maker/sample_3.py`
+
+
+

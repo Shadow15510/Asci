@@ -1,7 +1,8 @@
 from asci_lib import *
 from random import randint
 
-maps = (
+
+cartes = (
 r"""
  __                      
 /  \___    ###  *        
@@ -16,89 +17,105 @@ r"""
         ||               ||""",
 
 (r"""
-+------------------------------+
-|                              |
-|                              |
-|   *                          |
-|                              |
-|                              |
-+--|^|-------------------------+
-""", (1, 3), (4, 6))
++--+--+--------+--+--+
+|  |  |        |  |  |
+|  +  +        +  +  |
+|                    |
+|  +  +        +  +  |
++--/ *\--------/  \--+
+|                    |
++---|^|--------------+""",
+(1, 3), (5, 7)),
+
+(r"""
++-------+
+|       |
+|       |
+|       |
++--|^|--+
+""",
+(19, 4), (4, 4))
 )
 
 
-def get_dialogue(xp, current_map, x, y, stat):
+def evenements(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
-    if current_map == 0:
-        if coords == (16, 1): return {
-            0: [1, "Hey, bienvenue dans la map de test d'Asci !", 0],
-            1: [0, "Comment vas-tu aujourd'hui ? 1. Tres bien, merci ! Et vous-meme ? 2. La ferme le vieux ! ", 2],
-                2: [4, "Je vais bien, merci ! Voici une epee et une cote de maille.", 0, 0, 10, 10],
-                3: [0, "Oh, insultant personnage ! Pour la peine tu n'auras rien !", 0],
+    if carte_actuelle == 0:
+        if coords == (24, 4):
+            if stat[0] < 100: return [0, "Oh, mais tu es blesse !", 0, 50]
+            else: return [0, "Reviens me voir quand tu seras blesse."]
 
-            6: [1, "Belle journée, n'est-ce pas ? Dommage que ce brigand un peu au sud soit la...", 0],
+        elif coords == (16, 1): return {
+            "base": [0, "Alors ? T'en sorts-tu ?"],
 
-            8: [0, "Et bien je crois que c'est un test concluant !", 0],
-            
-            "base": [0, "Bonjour, besoin d'aide ?", 0],
-            }
+            0: [0, "J'ai une quete pour toi ! Un ami a moi a des problemes : un personnage louche traine autour de sa maison... Si tu pouvais l'en debarasser, il t'en serai reconnaissant. 1. Je m'en charge ! 2. Trouve quelqu'un d'autre.", 2],
+                1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, 0, 10, 10],
+                2: [2, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
 
-        elif coords == (24, 4):
-            if stat[0] < 100: return [0, "Tsst, est-ce que je tape sur des gens moi ? Bah alors ? J'ai panse tes plaies, mais fait gaffe a toi...", 0, 50]
-            else: return [0, "Tu es en pleine forme !", 0]
-
-        # 
-        elif coords == (4, 7): return {
-            6: [2, "Tu as tue le brigand !", 0],
-            "base": [0, "Il n'y a rien a faire par ici..."]
+            3: [0, "Alors ? Il est mort ce bandit ?"],
+            4: [1, "Merci, tu as rendu un grand service a mon ami !"]
         }
 
+        elif coords == (4, 7):
+            # Si le bandit vient d'être tué
+            if xp == 3: return [1, "Vous avez reussi la quete !"]
 
-    elif current_map == 1:
-        if coords == (4, 3): return {
-            3: [0, "Tsst, tu as encore insulte quelqu'un ? 1. Oui... 2. Hein ? Quoi ?", 2],
-                4: [0, "C'est pas tres malin, tu sais ?", 0],
-                5: [0, "Je n'aime pas les menteurs. Sort de chez moi.", 0],
+            # Si le bandit est encore vivant
+            elif xp < 3: return [0, "Qu'est-ce que tu regardes toi ? Casses-toi !"]
 
-            "base": [0, "Oui ?", False] 
-            }
+            # Si le bandit est déjà mort
+            else: return [0, "Vous regardez le cadavre froid du bandit."]
 
-    return [0, "Hmmm ?", False]
+    return [0, "Hmm ?"]
 
 
-def fight(xp, current_map, x, y, stat):
+def combats(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
-    if current_map == 0:
+    if carte_actuelle == 0:
         if coords == (4, 7):
-            if xp == 6:
-                enemy = [75, randint(0, 10), 0]
-            else:
-                return True
+            if xp == 3: ennemi_stat = [75, randint(5, 10), randint(5, 10)]
+            else: return True
 
-    end = 1
-    
-    while stat[0] > 0 and enemy[0] > 0:
-        player = stat[1] + randint(1, 5)
-        adv = enemy[1] + randint(1, 5)
+    defense_temporaire = defense_temporaire_ennemi = 0
+    while stat[0] > 0 and ennemi_stat[0] > 0:
 
-        if player > adv:
-            enemy[0] -= (player - enemy[2])
+        print("Vos PV : {0}\nPV ennemi : {1}".format(stat[0], ennemi_stat[0]))
+        print("<*> Actions <*>")
+        print("1. Attaquer")
+        print("2. Defendre")
+
+        action = int(input(">"))
+
+        defense_temporaire = 0
+        if action == 1:
+            pv = (stat[1] - ennemi_stat[2] - defense_temporaire_ennemi) + randint(-5, 10)
+            if pv < 0: pv = 0
+            ennemi_stat[0] -= pv
+        elif action == 2:
+            defense_temporaire = randint(1, 5)
+
+        defense_temporaire_ennemi = 0
+        if randint(1, 2) == 1:
+            pv = (ennemi_stat[1] - stat[2] - defense_temporaire) + randint(-5, 10)
+            if pv < 0: pv = 0
+            stat[0] -= pv
         else:
-            stat[0] -= (adv - stat[2])
+            defense_temporaire_ennemi = randint(1, 5)
 
     return stat[0] > 0
 
 
+def affichage_stat(stat):
+    pv, pa, pd = stat
 
-def display_stat(stat):
     print("<*> Statistiques <*>")
-    print("Points de vie .: {}".format(stat[0]))
-    print("Points attaque : {}".format(stat[1]))
-    print("Points defense : {}".format(stat[2]))
+    print("Points de vie .: {}".format(pv))
+    print("Points attaque : {}".format(pa))
+    print("Points defense : {}".format(pd))
 
 
-def start():
-    my_game = Asci(maps, get_dialogue, fight, display_stat, 10, [100, 0, 0])
-    my_game.mainloop()
+def mon_jeu():
+    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, [100, 0, 0])
+    rpg_python.mainloop()
