@@ -209,7 +209,7 @@ def mon_jeu():
     rpg_python.mainloop()
 ```
 
-Et voila ! N'oubliez pas d'importer `asci_lib` ! Pour ceux qui veulent tester, le code complet est dans le fichier `rpg_maker/sample_1.py`
+Et voila ! N'oubliez pas d'importer `asci_lib` ! Pour ceux qui veulent tester, le code complet est dans le fichier `samples/sample_1.py`
 
 #### Autre exemple basique
 
@@ -317,7 +317,7 @@ La limite est à 13 xp comme on peut le voir sur l'arbre :
 ```
 les `X` symbolise les impasses.
 
-Le fichier complet est disponible sous le nom `rpg_maker/sample_2.py`
+Le fichier complet est disponible sous le nom `samples/sample_2.py`
 
 #### Exemple de manipulation avancées
 
@@ -514,7 +514,7 @@ def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
     print("mon_jeu({}, {})".format(stat, data))
 ```
 La fonction est légèrement différente de celle vues précédemment, les arguments permettent de reprendre la partie en cours.
-Vous pouvez retrouver le fichier complet dans `rpg_maker/sample_3.py`
+Vous pouvez retrouver le fichier complet dans `samples/sample_3.py`
 
 
 
