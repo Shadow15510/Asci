@@ -48,6 +48,7 @@ def get_dialogue(xp, current_map, x, y, stat):
             if stat[0] < 100: return [0, "Tsst, est-ce que je tape sur des gens moi ? Bah alors ? J'ai panse tes plaies, mais fait gaffe a toi...", 0, 50]
             else: return [0, "Tu es en pleine forme !", 0]
 
+        # 
         elif coords == (4, 7): return {
             6: [2, "Tu as tue le brigand !", 0],
             "base": [0, "Il n'y a rien a faire par ici..."]
