@@ -421,7 +421,7 @@ def evenements(xp, carte_actuelle, x, y, stat):
     return [0, "Hmm ?"]
 ```
 
-Maintenant il reste à programmer la fin du combat, en d'autre terme, si le joueur gagne le combat, la fonction `evenements` va être appelée, il faut donc renvoyer un petit texte qui signale que le combat est gagné et qui incrémente les points d'XP de 2 points (pour passer de 1 à 3). Le bandit est sur les coordonnées `(4, 7)`.
+Maintenant il reste à programmer la fin du combat, en d'autre terme, si le joueur gagne le combat, la fonction `evenements` va être appelée, il faut donc renvoyer un petit texte qui signale que le combat est gagné et qui incrémente les points d'XP d'un point (pour passer de 3 à 4). Le bandit est sur les coordonnées `(4, 7)`.
 ```
 def evenements(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
