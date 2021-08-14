@@ -113,7 +113,7 @@ def affichage_stat(stat):
 
 #### Finalisation
 
-Il ne reste plus qu'à faire une petite fonction de nom de votre jeu qui va créer un modèle vierge de jeu rôle et qui va transmettre toutes ces données au modèle. Il vous restera ensuite à lancer cette fonction pour jouer.
+Il ne reste plus qu'à faire une petite fonction de nom du votre jeu qui va créer un modèle vierge de jeu rôle et qui va transmettre toutes ces données au modèle. Il vous restera ensuite à lancer cette fonction pour jouer.
 
 Cette fonction devra prendre dans l'ordre : 
  - le tuple des cartes
