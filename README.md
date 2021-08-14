@@ -22,6 +22,22 @@ Les statistiques sont une liste de variables dont le premier élément est néce
 
 Les statistiques ne peuvent être modifées que lors d'évènements. Comme vous le verrez dans la suite, les évènements sont des listes dont les derniers éléments ne sont pas déterminés : il s'agit des points que vous pouvez ajouter ou enlever à vos statistiques.
 
+### Les contrôle dans le jeu
+
+Pour se diriger :
+ - 1 : gauche
+ - 3 : droite
+ - 2 : bas
+ - 5 : haut
+
+Accéder aux statistiques :
+ - 8
+
+Quitter le jeu :
+ - 9
+
+Pour répéter la dernière touche pressée appuyez directement sur [EXE] sans entrer de nombre.
+
 ### Structure du programme
 
 Votre jeu va se diviser en grandes partie :
@@ -491,10 +507,13 @@ def affichage_stat(stat):
 ```
 et :
 ```
-def mon_jeu():
-    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, [100, 0, 0])
-    rpg_python.mainloop()
+def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
+    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, stat, data)
+    stat, data = rpg_python.mainloop()
+    print("Pour reprendre :")
+    print("mon_jeu({}, {})".format(stat, data))
 ```
+La fonction est légèrement différente de celle vues précédemment, les arguments permettent de reprendre la partie en cours.
 Vous pouvez retrouver le fichier complet dans `rpg_maker/sample_3.py`
 
 

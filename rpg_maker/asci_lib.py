@@ -147,7 +147,6 @@ class Asci:
         # Quit
         if key == 9:
             self.screen.clear()
-            print(self.stat, self.data)
 
         # /!\ TEST /!\ #
         if key == 7:
@@ -210,6 +209,8 @@ class Asci:
             else: key_buffer = key
 
             self._keyboard(key)
+
+        return self.stat, self.data
 
 
 class Event:
