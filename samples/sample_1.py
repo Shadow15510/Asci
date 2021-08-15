@@ -39,7 +39,10 @@ def affichage_stat(stat):
     print("PV : {}".format(pv))
     print("Argent : {}".format(argent))
 
+def custom(stat):
+    pass
+
 
 def mon_jeu():
-    rpg_python = Asci(carte_monde, evenements, combat, affichage_stat, 4, [100, 5])
+    rpg_python = Asci(carte_monde, evenements, combat, affichage_stat, custom, 4, [100, 5])
     rpg_python.mainloop()

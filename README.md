@@ -33,6 +33,9 @@ Pour se diriger :
 Accéder aux statistiques :
  - 7
 
+Accéder au menu d'affichage libre :
+ - 8
+
 Quitter le jeu :
  - 9
 
@@ -44,7 +47,7 @@ Votre jeu va se diviser en grandes partie :
  - création de la carte
  - création des évènements
  - gestion des combats
- - affichage des statistiques
+ - affichage des statistiques et fonction d'affichage libre
  - finalisation
 
 Vous aurez à plusieurs reprise des fonctions à programmer, ces fonctions auront accès à des variables du moteurs, elles sont toutes en lecture seule, exceptée les statistiques qui peuvent être modifiée par effet de bord. 
@@ -114,7 +117,7 @@ def combats(xp, carte_actuelle, x, y, stat):
     return stat[0] > 0
 ```
 
-#### Affichage des statistiques
+#### Affichage des statistiques et fonction libre
 
 La fonction est assez triviale :
  - la fonction devra prendre en argument la liste des statistiques (les points d'expérience, au sens du moteur, sont considérés comme ne faisant pas partie des statistiques)
@@ -127,6 +130,15 @@ def affichage_stat(stat):
     print("Points de vie .: {}".format(stat[0]))
 ```
 
+La fonction libre est une fonction qui est appelée lorsque l'utilisateur presse la touche 8. Vous pouvez afficher n'importe quoi, y compris rien, ou même modifier des trucs. Cette fonction doit être complètement programmée par vous. Elle ne doit répondre qu'à un seul impératif :
+ - la fonction prend en argument les statistiques du joueur et renvoie `None`
+
+La fonction va donc ressembler à :
+```
+def custom(stat):
+    ...
+```
+
 #### Finalisation
 
 Il ne reste plus qu'à faire une petite fonction de nom du votre jeu qui va créer un modèle vierge de jeu rôle et qui va transmettre toutes ces données au modèle. Il vous restera ensuite à lancer cette fonction pour jouer.
@@ -135,9 +147,10 @@ Cette fonction devra prendre dans l'ordre :
  - le tuple des cartes
  - la fonction des évènements
  - la fonction des combats
- - la fonction d'affichages des statistiques
+ - la fonction d'affichages des statistiques et la fonction libre
  - les points d'expérience de la partie (lorsque l'expérience du joueur atteint cette valeur, le jeu se termine)
  - la liste des statistiques (avec les points de vie en première place)
+ - [optionnel] la liste `data` utilisée par le moteur et non modifiable, de la forme `[XP, id de la map, x, y]`
 
 ### Exemples d'utilisation
 
@@ -199,13 +212,16 @@ def affichage_stat(stat):
     print("Statistiques")
     print("PV : {}".format(pv))
     print("Argent : {}".format(argent))
+
+def custom(stat):
+    pass
 ```
 
 Il ne reste plus qu'à tout donner au moteur !
 La limite d'XP de la partie est fixée à 3, on commence la partie avec 100 points de vie et 5 Argent.
 ```
 def mon_jeu():
-    rpg_python = Asci(carte_monde, evenements, combat, affichage_stat, 3, [100, 5])
+    rpg_python = Asci(carte_monde, evenements, combat, affichage_stat, custom, 3, [100, 5])
     rpg_python.mainloop()
 ```
 
@@ -305,7 +321,7 @@ def evenements(xp, carte_actuelle, x, y, stat):
 De même que pour l'exemple précédent : pas de combat. Je vous laisse gérer l'affichage des statistiques. Il reste la fonction finale :
 ```
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, 13, [100])
+    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, custom, 13, [100])
     rpg_python.mainloop()
 ```
 La limite est à 13 xp comme on peut le voir sur l'arbre :
@@ -504,11 +520,15 @@ def affichage_stat(stat):
     print("Points de vie .: {}".format(pv))
     print("Points attaque : {}".format(pa))
     print("Points defense : {}".format(pd))
+
+
+def custom(stat):
+    pass
 ```
 et :
 ```
 def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
-    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, stat, data)
+    rpg_python = Asci(cartes, evenements, combats, affichage_stat, custom, 5, stat, data)
     stat, data = rpg_python.mainloop()
     print("Pour reprendre :")
     print("mon_jeu({}, {})".format(stat, data))

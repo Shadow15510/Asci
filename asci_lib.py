@@ -47,7 +47,7 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, fn_events, fn_fight, fn_stat, end_game, stat, data=[0, 0, 0, 0], screen_width=21, screen_height=6):
+    def __init__(self, maps, fn_events, fn_fight, fn_stat, fn_custom, end_game, stat, data=[0, 0, 0, 0], screen_width=21, screen_height=6):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data
         if not stat or type(stat) != list:
@@ -63,6 +63,7 @@ class Asci:
         self._game_event = fn_events
         self._game_fight = fn_fight
         self._game_stat = fn_stat
+        self._game_custom = fn_custom
 
         # Screen configuration
         self.screen = Screen(screen_width, screen_height)
@@ -121,6 +122,7 @@ class Asci:
                     self.screen.set_world(self.maps[self.data[1]][0])
                 else:
                     self.screen.set_world(self.maps[0])
+                self.map_width, self.map_height = self.screen.get_map_size()
 
             # Talk
             elif cell_test == 3:
@@ -145,12 +147,17 @@ class Asci:
             self._game_stat(self.stat)
             input()
 
+        # Custom display function
+        elif key == 8:
+            self.screen.clear()
+            self._game_custom(self.stat)
+
         # Quit
-        if key == 9:
+        elif key == 9:
             self.screen.clear()
 
         # /!\ TEST /!\ #
-        if key == 8:
+        elif key == 4:
             print(self.data)
             input()
         # /!\ TEST /!\ #

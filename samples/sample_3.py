@@ -116,8 +116,12 @@ def affichage_stat(stat):
     print("Points defense : {}".format(pd))
 
 
+def custom(stat):
+    pass
+
+
 def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
-    rpg_python = Asci(cartes, evenements, combats, affichage_stat, 5, stat, data)
+    rpg_python = Asci(cartes, evenements, combats, affichage_stat, custom 5, stat, data)
     stat, data = rpg_python.mainloop()
     print("Pour reprendre :")
     print("mon_jeu({}, {})".format(stat, data))

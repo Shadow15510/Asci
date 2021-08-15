@@ -71,6 +71,10 @@ def affichage_statistique(stat):
     print("Points de Vie : {}".format(stat[0]))
 
 
+def custom(stat):
+    pass
+
+
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, 13, [100])
+    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, custom, 13, [100])
     rpg_python.mainloop()
