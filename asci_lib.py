@@ -156,7 +156,7 @@ class Asci:
 
         # Read the dialogue
         event = read_event(self.data[0], self._game_event(self.data[0], self.data[1], x, y, self.stat))
-        
+
         # XP and stat modification
         self.data[0] += event.xp_earned
         for index in range(len(event.stat)):
@@ -223,6 +223,7 @@ class Asci:
 
             self._keyboard(key)
 
+        if self.stat[0] <= 0: self.stat[0] = 100
         return self.stat, self.data
 
 
