@@ -163,6 +163,7 @@ class Asci:
             self.stat[index] += event.stat[index]
 
         answer_selected = convert(self.screen.display_text(event.text))
+
         if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
 
     def _fight(self, direction):
@@ -170,14 +171,8 @@ class Asci:
 
         # Run the fight
         if self._game_fight(self.data[0], self.data[1], x, y, self.stat):
-            event = read_event(self.data[0], self._game_event(self.data[0], self.data[1], x, y, self.stat))
+            self._talk(direction)
 
-            # XP and stat modification
-            self.data[0] += event.xp_earned
-            for index in range(len(event.stat)):
-                self.stat[index] += event.stat[index]
-
-            self.screen.display_text(event.text)
 
     def _get_map(self, direction):
         x, y = self._looked_case(direction)
