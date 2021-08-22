@@ -139,7 +139,7 @@ class Asci:
         # Custom display function
         elif key == 8:
             self.screen.clear()
-            self._game_custom(*self.data, self.stat)
+            self._game_custom(self.data[0], self.data[1], self.data[2], self.data[3], self.stat)
 
         # Quit
         elif key == 9:
