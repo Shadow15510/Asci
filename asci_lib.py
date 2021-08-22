@@ -251,7 +251,11 @@ def text_formater(string, screen_width=21, screen_height=6):
 
         return "\n".join(lines[:screen_height]) + "\n\n" + paragraph_formater(lines[screen_height:], screen_height)
 
-    lines = line_formater(string, screen_width).split("\n")
+    lines = []
+    for line in string.split("\n"):
+        for formated_line in line_formater(line, screen_width).split("\n"):
+            lines.append(formated_line)
+
     return paragraph_formater(lines, screen_height).split("\n\n")
 
 
