@@ -8,14 +8,14 @@ r"""
 |_ <>\     ###  
 |^|__|     /_\
 
-  *
+  ?
 
 
 |==|==|==|==|==|==|==|""",
 
 (r"""
 +--+--+--------+--+--+
-|  |  |  *     |  | *|
+|  |  |  ?     |  | ?|
 |  +  +        +  +  |
 |                    |
 |  +  +        +  +  |
@@ -71,10 +71,10 @@ def affichage_statistique(stat):
     print("Points de Vie : {}".format(stat[0]))
 
 
-def custom(stat):
+def custom(xp, carte_actuelle, x, y, stat):
     pass
 
 
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, custom, 13, [100])
-    rpg_python.mainloop()
+    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, custom)
+    rpg_python.mainloop(13, [100], legend=("$", "^", "?", "!"))

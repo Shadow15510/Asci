@@ -47,17 +47,9 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, fn_events, fn_fight, fn_stat, fn_custom, end_game, stat, data=[0, 0, 0, 0], screen_width=21, screen_height=6):
-        # Load save ; data = [XP, map_id, x, y]
-        self.data = data
-        if not stat or type(stat) != list:
-            self.stat = [100]
-        else:
-            self.stat = stat
-
-        # Load data
+    def __init__(self, maps, fn_events, fn_fight, fn_stat, fn_custom, screen_width=21, screen_height=6):
+        # Load maps
         self.maps = maps
-        self.end_game = end_game
 
         # Custom functions
         self._game_event = fn_events
@@ -65,11 +57,8 @@ class Asci:
         self._game_stat = fn_stat
         self._game_custom = fn_custom
 
-        # Screen configuration
+        # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
-        if data[1]: self.screen.set_world(maps[data[1]][0])
-        else: self.screen.set_world(maps[0])
-        self.map_width, self.map_height = self.screen.get_map_size()
 
     def _looked_case(self, direction):
         # Left
@@ -104,11 +93,11 @@ class Asci:
             if self.data[-1] + 4 >= self.map_height: return -1
             else: cell = self.screen.get_cell(10, 4)
 
-        cell_patterns = (" @", "^", "*", "$")
+        cell_patterns = self.legend
         for pattern_index in range(len(cell_patterns)):
             if cell in cell_patterns[pattern_index]: return pattern_index + 1
 
-        return 0
+        return cell == " "
 
     def _keyboard(self, key):
         # Interaction with map
@@ -150,7 +139,7 @@ class Asci:
         # Custom display function
         elif key == 8:
             self.screen.clear()
-            self._game_custom(self.stat)
+            self._game_custom(*self.data, self.stat)
 
         # Quit
         elif key == 9:
@@ -204,12 +193,29 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self):
+    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], legend=("@", "^", "*", "$")):
+        # Load save ; data = [XP, map_id, x, y]
+        self.data = data[:]
+        if not stat or type(stat) != list:
+            self.stat = [100]
+        else:
+            self.stat = stat
+
+        # Load legend
+        self.legend = legend[:]
+
+        # Screen and map configuration
+        if data[1]: self.screen.set_world(self.maps[data[1]][0])
+        else: self.screen.set_world(self.maps[0])
+        
+        self.map_width, self.map_height = self.screen.get_map_size()
+
         key = key_buffer = 0
-        while key != 9 and self.stat[0] > 0 and self.data[0] < self.end_game:
+
+        while key != 9 and self.stat[0] > 0 and self.data[0] < end_game:
             self.screen.set_data(self.data[-2:])
 
-            self.screen.set_cell(10, 3, "@")
+            self.screen.set_cell(10, 3, self.legend[0][0])
             key = convert(self.screen.display())
 
             if not key: key = key_buffer
