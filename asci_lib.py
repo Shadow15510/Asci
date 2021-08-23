@@ -32,12 +32,13 @@ class Screen:
         if return_input: return input(">")
 
     def display_text(self, string):
-        for paragraph in text_formater(string):
-            if paragraph:
-                self.clear()
-                print(paragraph)
-                last_input = input(">")
-        return last_input
+        paragraphs = [i for i in text_formater(string) if i]
+        nb_par = len(paragraphs)
+        for index in range(nb_par):
+            self.clear()
+            print(paragraphs[index])
+            if index + 1 == nb_par: return input(">")
+            else: input()
 
     def get_cell(self, x, y):
         return self._data[y][x]
@@ -202,7 +203,6 @@ class Asci:
         # Screen and map configuration
         if data[1]: self.screen.set_world(self.maps[data[1]][0])
         else: self.screen.set_world(self.maps[0])
-        
         self.map_width, self.map_height = self.screen.get_map_size()
 
         key = key_buffer = 0
@@ -220,6 +220,7 @@ class Asci:
 
         if self.stat[0] <= 0: self.stat[0] = 100
         return self.stat, self.data
+
 
 
 class Event:
