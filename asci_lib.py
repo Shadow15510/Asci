@@ -55,9 +55,7 @@ class Asci:
         # Custom functions
         self.legend = list(events_mapping.keys())
         self._game_events_mapping = [events_mapping[i] for i in self.legend]
-        if 9 in keys_mapping:
-            raise TypeError("")
-        self._game_keys_mapping = keys_mapping
+        self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5, 9)}
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
@@ -139,12 +137,6 @@ class Asci:
         # Quit
         elif key == 9:
             self.screen.clear()
-
-        # /!\ TEST /!\ #
-        elif key == 4:
-            print(self.data)
-            input()
-        # /!\ TEST /!\ #
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
