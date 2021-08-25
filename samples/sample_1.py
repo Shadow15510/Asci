@@ -13,7 +13,7 @@ r"""
 |==|==|==|==|==|==|==|""",)
 
 
-def evenements(xp, carte_actuelle, x, y, stat):
+def pnj(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -29,20 +29,20 @@ def evenements(xp, carte_actuelle, x, y, stat):
     return [0, "Hmm ?"]
 
 
-def combat(xp, carte_actuelle, x, y, stat): 
-    pass
 
 
-def affichage_stat(stat):
+def affichage_stat(xp, carte_actuelle, x, y, stat):
     pv, argent = stat
     print("Statistiques")
     print("PV : {}".format(pv))
     print("Argent : {}".format(argent))
+    input()
 
-def custom(xp, carte_actuelle, x, y, stat):
-    pass
+
+evenements = {"*": pnj}
+touche = {6: affichage_stat}
 
 
 def mon_jeu():
-    rpg_python = Asci(carte_monde, evenements, combat, affichage_stat, custom)
+    rpg_python = Asci(carte_monde, evenements, touche)
     rpg_python.mainloop(4, [100, 5])

@@ -48,15 +48,16 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, fn_events, fn_fight, fn_stat, fn_custom, screen_width=21, screen_height=6):
+    def __init__(self, maps, events_mapping, keys_mapping, screen_width=21, screen_height=6):
         # Load maps
         self.maps = maps
 
         # Custom functions
-        self._game_event = fn_events
-        self._game_fight = fn_fight
-        self._game_stat = fn_stat
-        self._game_custom = fn_custom
+        self.legend = list(events_mapping.keys())
+        self._game_events_mapping = [events_mapping[i] for i in self.legend]
+        if 9 in keys_mapping:
+            raise TypeError("")
+        self._game_keys_mapping = keys_mapping
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
@@ -81,6 +82,11 @@ class Asci:
         return self.data[2] + 10, self.data[3] + 3
 
     def _cell_test(self, direction):
+        # Return :
+        # -1 : out of the map or unwalkable
+        # -2 : walkable
+        # >= 0 : interaction
+        
         if direction == 1:
             if self.data[-2] + 9 < 0: return -1
             else: cell = self.screen.get_cell(9, 3)
@@ -96,17 +102,18 @@ class Asci:
 
         cell_patterns = self.legend
         for pattern_index in range(len(cell_patterns)):
-            if cell in cell_patterns[pattern_index]: return pattern_index + 1
+            if cell in cell_patterns[pattern_index]: return pattern_index
 
-        return cell == " "
+        if cell in self.walkable: return -2
+        else: return -1
 
     def _keyboard(self, key):
-        # Interaction with map
+        # Interaction while moving
         if key in (1, 3, 5, 2):
             cell_test = self._cell_test(key)
             
             # Enter house
-            if cell_test == 2 or (self.data[1] and cell_test < 0):
+            if cell_test == len(self.legend) - 1: # or (self.data[1] and cell_test < 0):
                 self.data[1], self.data[2], self.data[3] = self._get_map(key)
                 if self.data[1]:
                     self.screen.set_world(self.maps[self.data[1]][0])
@@ -114,33 +121,20 @@ class Asci:
                     self.screen.set_world(self.maps[0])
                 self.map_width, self.map_height = self.screen.get_map_size()
 
-            # Talk
-            elif cell_test == 3:
-                self._talk(key)
+            # Move
+            elif cell_test == -2:
+                if key == 1: self.data[2] -= 1
+                if key == 3: self.data[2] += 1
+                if key == 5: self.data[3] -= 1
+                if key == 2: self.data[3] += 1
 
-            # Fight
-            elif cell_test == 4:
-                self._fight(key)
+            # Interaction
+            elif cell_test >= 0: self._interaction(key, cell_test)
 
-        # Left
-        if key == 1 and cell_test == 1: self.data[2] -= 1
-        # Right
-        if key == 3 and cell_test == 1: self.data[2] += 1
-        # Up
-        if key == 5 and cell_test == 1: self.data[3] -= 1
-        # Down
-        if key == 2 and cell_test == 1: self.data[3] += 1
-
-        # Stat
-        if key == 7:
+        # Custom functions
+        elif key in self._game_keys_mapping:
             self.screen.clear()
-            self._game_stat(self.stat)
-            input()
-
-        # Custom display function
-        elif key == 8:
-            self.screen.clear()
-            self._game_custom(self.data[0], self.data[1], self.data[2], self.data[3], self.stat)
+            self._game_keys_mapping[key](self.data[0], self.data[1], self.data[2], self.data[3], self.stat)
 
         # Quit
         elif key == 9:
@@ -152,28 +146,22 @@ class Asci:
             input()
         # /!\ TEST /!\ #
 
-    def _talk(self, direction):
+    def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
 
-        # Read the dialogue
-        event = read_event(self.data[0], self._game_event(self.data[0], self.data[1], x, y, self.stat))
+        # Get the event
+        event = self._game_events_mapping[cell_content](self.data[0], self.data[1], x, y, self.stat)
+        event = read_event(self.data[0], event)
 
         # XP and stat modification
         self.data[0] += event.xp_earned
         for index in range(len(event.stat)):
             self.stat[index] += event.stat[index]
 
-        answer_selected = convert(self.screen.display_text(event.text))
-
-        if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
-
-    def _fight(self, direction):
-        x, y = self._looked_case(direction)
-
-        # Run the fight
-        if self._game_fight(self.data[0], self.data[1], x, y, self.stat):
-            self._talk(direction)
-
+        # Display and get answer
+        if event.text:
+            answer_selected = convert(self.screen.display_text(event.text))
+            if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
 
     def _get_map(self, direction):
         x, y = self._looked_case(direction)
@@ -189,7 +177,7 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], legend=("@", "^", "*", "$")):
+    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], player="@", door="^", walkable=" "):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data[:]
         if not stat or type(stat) != list:
@@ -197,8 +185,8 @@ class Asci:
         else:
             self.stat = stat
 
-        # Load legend
-        self.legend = legend[:]
+        self.legend.append(door)
+        self.walkable = walkable
 
         # Screen and map configuration
         if data[1]: self.screen.set_world(self.maps[data[1]][0])
@@ -210,7 +198,7 @@ class Asci:
         while key != 9 and self.stat[0] > 0 and self.data[0] < end_game:
             self.screen.set_data(self.data[-2:])
 
-            self.screen.set_cell(10, 3, self.legend[0][0])
+            self.screen.set_cell(10, 3, player)
             key = convert(self.screen.display())
 
             if not key: key = key_buffer

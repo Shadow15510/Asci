@@ -26,7 +26,7 @@ r"""
 )
 
 
-def evenements(xp, carte_actuelle, x, y, stat):
+def pnj(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -63,18 +63,16 @@ def evenements(xp, carte_actuelle, x, y, stat):
     return [0, "Hmm ?"]
 
 
-def combat(xp, carte_actuelle, x, y, stat):
-    pass
 
-def affichage_statistique(stat):
+def affichage_statistique(xp, carte_actuelle, x, y, stat):
     print("Statistiques :")
     print("Points de Vie : {}".format(stat[0]))
 
 
-def custom(xp, carte_actuelle, x, y, stat):
-    pass
+evenements = {"?*": pnj}
+touche = {8: affichage_statistique}
 
 
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, combat, affichage_statistique, custom)
-    rpg_python.mainloop(13, [100], legend=("$", "^", "?", "!"))
+    rpg_python = Asci(cartes, evenements, touche)
+    rpg_python.mainloop(13, [100])

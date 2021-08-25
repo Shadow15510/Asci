@@ -38,7 +38,7 @@ r"""
 )
 
 
-def evenements(xp, carte_actuelle, x, y, stat):
+def pnj(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -70,14 +70,20 @@ def evenements(xp, carte_actuelle, x, y, stat):
     return [0, "Hmm ?"]
 
 
-def combats(xp, carte_actuelle, x, y, stat):
+def ennemi(xp, carte_actuelle, x, y, stat):
     coords = (x, y)
 
     if carte_actuelle == 0:
         if coords == (4, 7):
-            if xp == 3: ennemi_stat = [75, randint(5, 10), randint(5, 10)]
-            else: return True
+            # Bandit vivant
+            if xp == 3:
+                if combat(stat, [75, randint(5, 10), randint(5, 10)]):
+                    return [1, "Vous avez reussi la quete !"]
+            elif xp < 3: return [0, "Qu'est-ce tu regardes toi ? Casses-toi !"]
+            else: return [0, "Vous regardez le cadavre froid du bandit."]
 
+
+def combat(stat, ennemi_stat):
     defense_temporaire = defense_temporaire_ennemi = 0
     while stat[0] > 0 and ennemi_stat[0] > 0:
 
@@ -107,21 +113,21 @@ def combats(xp, carte_actuelle, x, y, stat):
     return stat[0] > 0
 
 
-def affichage_stat(stat):
+def affichage_stat(xp, carte_actuelle, x, y, stat):
     pv, pa, pd = stat
 
     print("<*> Statistiques <*>")
     print("Points de vie .: {}".format(pv))
     print("Points attaque : {}".format(pa))
     print("Points defense : {}".format(pd))
+    input()
 
-
-def custom(xp, carte_actuelle, x, y, stat):
-    pass
+evenements = {"*": pnj, "$": ennemi}
+touche = {7: affichage_stat}
 
 
 def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
-    rpg_python = Asci(cartes, evenements, combats, affichage_stat, custom)
+    rpg_python = Asci(cartes, evenements, touche)
     stat, data = rpg_python.mainloop(5, stat, data=data)
     print("Pour reprendre :")
     print("mon_jeu({}, {})".format(stat, data))
