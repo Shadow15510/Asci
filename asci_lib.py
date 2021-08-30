@@ -142,6 +142,8 @@ class Asci:
 
         self.data[0] = fake_data[0]
         self.data[1] = fake_data[1]
+        if fake_data[2] != x: self.data[2] = fake_data[2]
+        if fake_data[3] != y: self.data[3] = fake_data[3]
 
         # XP and stat modification
         self.data[0] += event.xp_earned
