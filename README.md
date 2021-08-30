@@ -8,7 +8,7 @@
 
 ### Principe
 
-Le moteur repose sur l'évolution de points d'expérience pour déterminer votre avancée dans le jeu. Ces points d'expériences sont donnés au joueur à l'issu d'évènements.
+Le moteur repose sur l'évolution de points d'expérience pour déterminer votre avancée dans le jeu. Ces points d'expériences sont donnés au joueur à l'issue d'évènements.
 
 ## Licence
 
