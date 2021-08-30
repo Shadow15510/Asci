@@ -22,7 +22,7 @@ def pnj(data, stat):
             0: [0, "Mon bon monsieur, vous n'auriez pas quelques sous pour moi ? 1. He non mon brave... 2. Mais si, bien sur, tenez.", 2],
                 1: [2, "Radin !"],
                 # 0 réponse possibles, -1 Argent
-                2: [1, "Merci !", 0, (0, -1)],
+                2: [1, "Merci !", 0, (1, -1)],
 
             "base": [0, "Hmm ?"]
         }
