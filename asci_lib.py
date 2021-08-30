@@ -140,6 +140,7 @@ class Asci:
         event = self._game_events_mapping[cell_content](fake_data, self.stat)
         event = read_event(self.data[0], event)
 
+        # data modification
         self.data[0] = fake_data[0]
         self.data[1] = fake_data[1]
         if fake_data[2] != x: self.data[2] = fake_data[2]
@@ -147,8 +148,8 @@ class Asci:
 
         # XP and stat modification
         self.data[0] += event.xp_earned
-        for index in range(len(event.stat)):
-            self.stat[index] += event.stat[index]
+        for index, value in event.stat:
+            self.stat[index] += value
 
         # Display and get answer
         if event.text:
@@ -256,4 +257,3 @@ def read_event(xp, event):
         raise TypeError("event is of type {} instead of list".format(type(event)))
 
     return Event(*event)
-
