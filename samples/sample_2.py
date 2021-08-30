@@ -22,11 +22,12 @@ r"""
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-(1, 3), (5, 7))
+(1, 3), (5, 7), 0)
 )
 
 
-def pnj(xp, carte_actuelle, x, y, stat):
+def pnj(data, stat):
+    xp, carte_actuelle, x, y = data
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -64,7 +65,7 @@ def pnj(xp, carte_actuelle, x, y, stat):
 
 
 
-def affichage_statistique(xp, carte_actuelle, x, y, stat):
+def affichage_statistique(data, stat):
     print("Statistiques :")
     print("Points de Vie : {}".format(stat[0]))
 

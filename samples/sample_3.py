@@ -25,7 +25,7 @@ r"""
 +--/ *\--------/  \--+
 |                    |
 +---|^|--------------+""",
-(1, 3), (5, 7)),
+(1, 3), (5, 7), 0),
 
 (r"""
 +-------+
@@ -34,11 +34,12 @@ r"""
 |       |
 +--|^|--+
 """,
-(19, 4), (4, 4))
+(19, 4), (4, 4), 0)
 )
 
 
-def pnj(xp, carte_actuelle, x, y, stat):
+def pnj(data, stat):
+    xp, carte_actuelle, x, y = data
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -70,7 +71,8 @@ def pnj(xp, carte_actuelle, x, y, stat):
     return [0, "Hmm ?"]
 
 
-def ennemi(xp, carte_actuelle, x, y, stat):
+def ennemi(data, stat):
+    xp, carte_actuelle, x, y = data
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -113,7 +115,7 @@ def combat(stat, ennemi_stat):
     return stat[0] > 0
 
 
-def affichage_stat(xp, carte_actuelle, x, y, stat):
+def affichage_stat(data, stat):
     pv, pa, pd = stat
 
     print("<*> Statistiques <*>")

@@ -13,7 +13,8 @@ r"""
 |==|==|==|==|==|==|==|""",)
 
 
-def pnj(xp, carte_actuelle, x, y, stat):
+def pnj(data, stat):
+    xp, carte_actuelle, x, y = data
     coords = (x, y)
 
     if carte_actuelle == 0:
@@ -31,7 +32,7 @@ def pnj(xp, carte_actuelle, x, y, stat):
 
 
 
-def affichage_stat(xp, carte_actuelle, x, y, stat):
+def affichage_stat(data, stat):
     pv, argent = stat
     print("Statistiques")
     print("PV : {}".format(pv))

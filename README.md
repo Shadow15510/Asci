@@ -4,7 +4,7 @@
 
 ### Présentation
 
-À l'origine, Asci est un jeu de rôle en Python pour Graph 90. Le jeu est aujourd'hui accompagné d'un moteur pour que vous puissiez réaliser vos jeux de rôles en Python avec un minimum d'effort.
+À l'origine, Asci est un jeu de rôle en Python pour Graph 90. Aujourd'hui, c'est un moteur de jeu de rôle pour que vous puissiez réaliser vos jeux de rôles en Python avec un minimum d'effort.
 
 ### Principe
 

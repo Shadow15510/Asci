@@ -50,7 +50,10 @@ class Screen:
 class Asci:
     def __init__(self, maps, events_mapping, keys_mapping, screen_width=21, screen_height=6):
         # Load maps
-        self.maps = maps
+        self.maps = []
+        for i in maps:
+            if type(i) == str: self.maps.append(Map(i))
+            else: self.maps.append(Map(*i))
 
         # Custom functions
         self.legend = list(events_mapping.keys())
@@ -80,11 +83,6 @@ class Asci:
         return self.data[2] + 10, self.data[3] + 3
 
     def _cell_test(self, direction):
-        # Return :
-        # -1 : out of the map or unwalkable
-        # -2 : walkable
-        # >= 0 : interaction
-        
         if direction == 1:
             if self.data[-2] + 9 < 0: return -1
             else: cell = self.screen.get_cell(9, 3)
@@ -102,8 +100,7 @@ class Asci:
         for pattern_index in range(len(cell_patterns)):
             if cell in cell_patterns[pattern_index]: return pattern_index
 
-        if cell in self.walkable: return -2
-        else: return -1
+        return -1
 
     def _keyboard(self, key):
         # Interaction while moving
@@ -111,16 +108,13 @@ class Asci:
             cell_test = self._cell_test(key)
             
             # Enter house
-            if cell_test == len(self.legend) - 1: # or (self.data[1] and cell_test < 0):
+            if cell_test == len(self.legend) - 2: # or (self.data[1] and cell_test < 0):
                 self.data[1], self.data[2], self.data[3] = self._get_map(key)
-                if self.data[1]:
-                    self.screen.set_world(self.maps[self.data[1]][0])
-                else:
-                    self.screen.set_world(self.maps[0])
+                self.screen.set_world(self.maps[self.data[1]].map_data)
                 self.map_width, self.map_height = self.screen.get_map_size()
 
             # Move
-            elif cell_test == -2:
+            elif cell_test == len(self.legend) - 1:
                 if key == 1: self.data[2] -= 1
                 if key == 3: self.data[2] += 1
                 if key == 5: self.data[3] -= 1
@@ -132,7 +126,7 @@ class Asci:
         # Custom functions
         elif key in self._game_keys_mapping:
             self.screen.clear()
-            self._game_keys_mapping[key](self.data[0], self.data[1], self.data[2], self.data[3], self.stat)
+            self._game_keys_mapping[key](self.data, self.stat)
 
         # Quit
         elif key == 9:
@@ -140,10 +134,14 @@ class Asci:
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
+        fake_data = [self.data[0], self.data[1], x, y]
 
         # Get the event
-        event = self._game_events_mapping[cell_content](self.data[0], self.data[1], x, y, self.stat)
+        event = self._game_events_mapping[cell_content](fake_data, self.stat)
         event = read_event(self.data[0], event)
+
+        self.data[0] = fake_data[0]
+        self.data[1] = fake_data[1]
 
         # XP and stat modification
         self.data[0] += event.xp_earned
@@ -159,30 +157,29 @@ class Asci:
         x, y = self._looked_case(direction)
         current_map = self.data[1]
 
-        if current_map:
-            if (x, y) == self.maps[current_map][2]:
-                return 0, self.maps[current_map][1][0] - 10, self.maps[current_map][1][1] - 3
+        if (x, y) == self.maps[current_map].coords_out:
+            return self.maps[current_map].parent, self.maps[current_map].coords_in[0] - 10, self.maps[current_map].coords_in[1] - 3
+        
         else:
-            for index in range(1, len(self.maps)):
-                if (x, y) == self.maps[index][1]:
-                    return index, self.maps[index][2][0] - 10, self.maps[index][2][1] - 3
+            maps_available = [(i, self.maps[i]) for i in range(len(self.maps)) if self.maps[i].parent == current_map]
+
+            for index, map_looked in maps_available:
+                if (x, y) == map_looked.coords_in:
+                    return index, map_looked.coords_out[0] - 10, map_looked.coords_out[1] - 3
 
         return current_map, self.data[2], self.data[3]
 
     def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], player="@", door="^", walkable=" "):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data[:]
-        if not stat or type(stat) != list:
-            self.stat = [100]
-        else:
-            self.stat = stat
+        if not stat or type(stat) != list: self.stat = [100]
+        else: self.stat = stat
 
         self.legend.append(door)
-        self.walkable = walkable
+        self.legend.append(walkable)
 
         # Screen and map configuration
-        if data[1]: self.screen.set_world(self.maps[data[1]][0])
-        else: self.screen.set_world(self.maps[0])
+        self.screen.set_world(self.maps[data[1]].map_data)
         self.map_width, self.map_height = self.screen.get_map_size()
 
         key = key_buffer = 0
@@ -202,13 +199,21 @@ class Asci:
         return self.stat, self.data
 
 
-
 class Event:
     def __init__(self, xp_earned, text, answer=0, *stat):
         self.xp_earned = xp_earned
         self.text = text
         self.answer = answer
         self.stat = stat
+
+
+class Map:
+    def __init__(self, map_data, coords_in=None, coords_out=None, parent=None):
+        self.map_data = map_data
+        self.coords_in = coords_in
+        self.coords_out = coords_out
+
+        self.parent = parent
 
 
 def convert(string):
@@ -249,3 +254,4 @@ def read_event(xp, event):
         raise TypeError("event is of type {} instead of list".format(type(event)))
 
     return Event(*event)
+
