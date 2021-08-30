@@ -50,10 +50,7 @@ class Screen:
 class Asci:
     def __init__(self, maps, events_mapping, keys_mapping, screen_width=21, screen_height=6):
         # Load maps
-        self.maps = []
-        for i in maps:
-            if type(i) == str: self.maps.append(Map(i))
-            else: self.maps.append(Map(*i))
+        self.maps = [Map(*i) for i in maps]
 
         # Custom functions
         self.legend = list(events_mapping.keys())
@@ -157,18 +154,12 @@ class Asci:
             if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
 
     def _get_map(self, direction):
-        x, y = self._looked_case(direction)
+        current_coords = self._looked_case(direction)
         current_map = self.data[1]
 
-        if (x, y) == self.maps[current_map].coords_out:
-            return self.maps[current_map].parent, self.maps[current_map].coords_in[0] - 10, self.maps[current_map].coords_in[1] - 3
-        
-        else:
-            maps_available = [(i, self.maps[i]) for i in range(len(self.maps)) if self.maps[i].parent == current_map]
-
-            for index, map_looked in maps_available:
-                if (x, y) == map_looked.coords_in:
-                    return index, map_looked.coords_out[0] - 10, map_looked.coords_out[1] - 3
+        for coords in self.maps[current_map].coords:
+            if coords[:2] == current_coords:
+                return coords[2], coords[3] - 10, coords[4] - 3
 
         return current_map, self.data[2], self.data[3]
 
@@ -211,12 +202,9 @@ class Event:
 
 
 class Map:
-    def __init__(self, map_data, coords_in=None, coords_out=None, parent=None):
+    def __init__(self, map_data, *coords):
         self.map_data = map_data
-        self.coords_in = coords_in
-        self.coords_out = coords_out
-
-        self.parent = parent
+        self.coords = coords
 
 
 def convert(string):
