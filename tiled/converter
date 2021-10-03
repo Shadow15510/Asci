@@ -3,7 +3,8 @@ from sys import argv
 import xmltodict
 
 
-def convert_to_string(filename):
+def convert_to_string(filename, *doors):
+    print(doors)
     output_filename, extension = filename.split('.')
     char_list = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ "
 
@@ -17,13 +18,18 @@ def convert_to_string(filename):
         data = data.splitlines()
         data = [[int(char_id) for char_id in line.split(",") if char_id] for line in data]
     
+    doors_coords = []
     output = r""
-    for line in data:
-        for char_id in line:
+    for line_index, line in enumerate(data):
+        for char_index, char_id in enumerate(line):
             output += char_list[char_id]
+            if char_list[char_id] in doors:
+                doors_coords.append(f"\t({char_index}, {line_index}, ,0, 0),")
         output += "\n"
 
+    doors_coords = "\n".join(doors_coords)
+
     with open(f"{output_filename}.py", "w") as file:
-        file.write(f"{output_filename} = (r\"\"\"\n{output[:-2]}\"\"\",\n)")
+        file.write(f"{output_filename} = (r\"\"\"\n{output[:-1]}\"\"\",\n{doors_coords}\n)")
 
 convert_to_string(*argv[1:])
