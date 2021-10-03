@@ -4,7 +4,6 @@ import xmltodict
 
 
 def convert_to_string(filename, *doors):
-    print(doors)
     output_filename, extension = filename.split('.')
     char_list = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ "
 
