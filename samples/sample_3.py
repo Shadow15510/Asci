@@ -54,7 +54,7 @@ def pnj(data, stat):
 
             0: [0, "J'ai une quete pour toi ! Un ami a moi a des problemes : un personnage louche traine autour de sa maison... Si tu pouvais l'en debarasser, il t'en serai reconnaissant. 1. Je m'en charge ! 2. Trouve quelqu'un d'autre.", 2],
                 1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, 0, 10, 10],
-                2: [2, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
+                2: [3, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
 
             3: [0, "Alors ? Il est mort ce bandit ?"],
             4: [1, "Merci, tu as rendu un grand service a mon ami !"]
