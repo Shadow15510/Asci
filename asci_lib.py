@@ -48,7 +48,7 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, events_mapping, keys_mapping, screen_width=21, screen_height=6):
+    def __init__(self, maps, events_mapping, keys_mapping, routine=None, screen_width=21, screen_height=6):
         # Load maps
         self.maps = [Map(*i) for i in maps]
 
@@ -56,6 +56,7 @@ class Asci:
         self.legend = list(events_mapping.keys())
         self._game_events_mapping = [events_mapping[i] for i in self.legend]
         self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5, 9)}
+        self._game_routine = routine
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
@@ -188,6 +189,8 @@ class Asci:
             else: key_buffer = key
 
             self._keyboard(key)
+            
+            if self._game_routine: self._game_routine(self.data, self.stat)
 
         if self.stat[0] <= 0: self.stat[0] = 100
         return self.stat, self.data
