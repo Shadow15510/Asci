@@ -164,7 +164,7 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], player="@", door="^", walkable=" "):
+    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], player="@", door="^", walkable=" ", exit_key=9):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data[:]
         if not stat or type(stat) != list: self.stat = [100]
@@ -179,7 +179,7 @@ class Asci:
 
         key = key_buffer = 0
 
-        while key != 9 and self.stat[0] > 0 and self.data[0] < end_game:
+        while key != exit_key and self.stat[0] > 0 and self.data[0] < end_game:
             self.screen.set_data(self.data[-2:])
 
             self.screen.set_cell(10, 3, player)
@@ -212,7 +212,7 @@ class Map:
 
 def convert(string):
     try: return int(string)
-    except: return 0
+    except: return string
 
 
 def text_formater(string, screen_width=21, screen_height=6):

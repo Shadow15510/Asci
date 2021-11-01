@@ -32,16 +32,10 @@ def pnj(data, stat):
 
 
 def affichage_stat(data, stat):
-    pv, argent, seconds = stat
-
-    minutes = seconds // 60
-    hours = minutes // 60
-
-    time = "{}:{}:{}".format(int(hours % 24), int(minutes % 60), int(seconds % 60))
+    pv, argent = stat
     print("Statistiques")
     print("PV : {}".format(pv))
     print("Argent : {}".format(argent))
-    print("{}".format(time))
     input()
 
 
@@ -51,4 +45,4 @@ touche = {6: affichage_stat}
 
 def mon_jeu():
     rpg_python = Asci(carte_monde, evenements, touche)
-    rpg_python.mainloop(4, stat=[100, 5, 0])
+    rpg_python.mainloop(4, stat=[100, 5])
