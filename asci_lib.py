@@ -1,3 +1,5 @@
+# Asci (version 1.5.1)
+
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
         # Screen configuration
@@ -48,7 +50,7 @@ class Screen:
 
 
 class Asci:
-    def __init__(self, maps, events_mapping, keys_mapping, routine=None, screen_width=21, screen_height=6):
+    def __init__(self, maps, events_mapping, keys_mapping, screen_width=21, screen_height=6):
         # Load maps
         self.maps = [Map(*i) for i in maps]
 
@@ -56,7 +58,6 @@ class Asci:
         self.legend = list(events_mapping.keys())
         self._game_events_mapping = [events_mapping[i] for i in self.legend]
         self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5, 9)}
-        self._game_routine = routine
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
@@ -164,7 +165,7 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], player="@", door="^", walkable=" ", exit_key=9):
+    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], routine=None, player="@", door="^", walkable=" ", exit_key=9):
         # Load save ; data = [XP, map_id, x, y]
         self.data = data[:]
         if not stat or type(stat) != list: self.stat = [100]
@@ -190,7 +191,8 @@ class Asci:
 
             self._keyboard(key)
             
-            if self._game_routine: self._game_routine(self.data, self.stat)
+            # Launching the game routine
+            if routine: routine(self.data, self.stat)
 
         if self.stat[0] <= 0: self.stat[0] = 100
         return self.stat, self.data

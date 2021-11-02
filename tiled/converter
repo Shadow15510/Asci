@@ -25,10 +25,10 @@ def convert_to_string(filename, doors, misc):
             output += char_list[char_id]
 
             if char_list[char_id] in doors:
-                doors_coords.append(f"\t({char_index}, {line_index}, ,0, 0),")
+                doors_coords.append(f"\t({char_index}, {line_index}, , 0, 0),")
             
             if char_list[char_id] in misc:
-                misc_coords.append(f"# {char_list[char_id]} : ({char_index}; {line_index})")
+                misc_coords.append(f"# {char_list[char_id]} : ({char_index}, {line_index})")
 
         output += "\n"
 
