@@ -1,4 +1,4 @@
-# Asci (version 1.5.1)
+# Asci (version 1.5.2)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -250,3 +250,10 @@ def read_event(xp, event):
         raise TypeError("event is of type {} instead of list".format(type(event)))
 
     return Event(*event)
+
+
+def print_text(text):
+    for i in text_formater(text):
+        print("\n" * 7)
+        print(i)
+        input()
