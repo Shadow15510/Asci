@@ -197,6 +197,8 @@ class Asci:
             if routine: routine(self.data, self.stat)
 
         if self.stat[0] <= 0: self.stat[0] = 100
+        self.data[2] += 10
+        self.data[3] += 3
         return self.stat, self.data
 
 
