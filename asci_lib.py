@@ -165,11 +165,13 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self, end_game, stat=None, data=[0, 0, 0, 0], routine=None, player="@", door="^", walkable=" ", exit_key=9):
+    def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9):
         # Load save ; data = [XP, map_id, x, y]
-        self.data = data[:]
         if not stat or type(stat) != list: self.stat = [100]
         else: self.stat = stat
+
+        if not data: self.data = [0, 0, 0, 0]
+        else: self.data = [data[0], data[1], data[2] - 10, data[3] - 3]
 
         self.legend.append(door)
         self.legend.append(walkable)
