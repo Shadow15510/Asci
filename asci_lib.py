@@ -1,4 +1,4 @@
-# Asci (version 1.5.2)
+# Asci (version 1.5.3)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -57,7 +57,7 @@ class Asci:
         # Custom functions
         self.legend = list(events_mapping.keys())
         self._game_events_mapping = [events_mapping[i] for i in self.legend]
-        self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5, 9)}
+        self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5)}
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
@@ -133,17 +133,17 @@ class Asci:
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
-        fake_data = [self.data[0], self.data[1], x, y]
+        data_copy = [self.data[0], self.data[1], x, y]
 
         # Get the event
-        event = self._game_events_mapping[cell_content](fake_data, self.stat)
+        event = self._game_events_mapping[cell_content](data_copy, self.stat)
         event = read_event(self.data[0], event)
 
         # data modification
-        self.data[0] = fake_data[0]
-        self.data[1] = fake_data[1]
-        if fake_data[2] != x: self.data[2] = fake_data[2]
-        if fake_data[3] != y: self.data[3] = fake_data[3]
+        self.data[0] = data_copy[0]
+        self.data[1] = data_copy[1]
+        if data_copy[2] != x: self.data[2] = data_copy[2]
+        if data_copy[3] != y: self.data[3] = data_copy[3]
 
         # XP and stat modification
         self.data[0] += event.xp_earned
@@ -166,6 +166,9 @@ class Asci:
         return current_map, self.data[2], self.data[3]
 
     def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9):
+        if exit_key in self._game_keys_mapping:
+            raise ValueError(f"'{exit_key}' is already assigned to a function.")
+
         # Load save ; data = [XP, map_id, x, y]
         if not stat or type(stat) != list: self.stat = [100]
         else: self.stat = stat
