@@ -152,7 +152,7 @@ class Asci:
 
         # Display and get answer
         if event.text:
-            answer_selected = convert(self.screen.display_text(event.text))
+            answer_selected = convert(self.screen.display_text(event.text), True)
             if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
 
     def _get_map(self, direction):
@@ -167,7 +167,7 @@ class Asci:
 
     def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9):
         if exit_key in self._game_keys_mapping:
-            raise ValueError(f"'{exit_key}' is already assigned to a function.")
+            raise ValueError("'{}' is already assigned to a function.".format(exit_key))
 
         # Load save ; data = [XP, map_id, x, y]
         if not stat or type(stat) != list: self.stat = [100]
@@ -219,9 +219,11 @@ class Map:
         self.coords = coords
 
 
-def convert(string):
+def convert(string, force_int=False):
     try: return int(string)
-    except: return string
+    except:
+        if force_int: return 0
+        else: return string
 
 
 def text_formater(string, screen_width=21, screen_height=6):
