@@ -137,14 +137,15 @@ class Asci:
 
         # Get the event
         event = self._game_events_mapping[cell_content](data_copy, self.stat)
-        if not event: return 
-        event = read_event(self.data[0], event)
 
         # data modification
         self.data[0] = data_copy[0]
         self.data[1] = data_copy[1]
         if data_copy[2] != x: self.data[2] = data_copy[2]
         if data_copy[3] != y: self.data[3] = data_copy[3]
+
+        if not event: return 
+        event = read_event(self.data[0], event)
 
         # XP and stat modification
         self.data[0] += event.xp_earned
