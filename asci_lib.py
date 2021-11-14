@@ -137,6 +137,7 @@ class Asci:
 
         # Get the event
         event = self._game_events_mapping[cell_content](data_copy, self.stat)
+        if not event: return 
         event = read_event(self.data[0], event)
 
         # data modification
