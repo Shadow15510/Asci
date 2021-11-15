@@ -106,7 +106,7 @@ class Asci:
         if key in (1, 3, 5, 2):
             cell_test = self._cell_test(key)
             
-            # Enter house
+            # Change map
             if cell_test == len(self.legend) - 2: # or (self.data[1] and cell_test < 0):
                 self.data[1], self.data[2], self.data[3] = self._get_map(key)
                 self.screen.set_world(self.maps[self.data[1]].map_data)
@@ -140,9 +140,13 @@ class Asci:
 
         # data modification
         self.data[0] = data_copy[0]
-        self.data[1] = data_copy[1]
-        if data_copy[2] != x: self.data[2] = data_copy[2]
-        if data_copy[3] != y: self.data[3] = data_copy[3]
+        if self.data[1] != data_copy[1]:
+            self.data[1] = data_copy[1]
+            self.screen.set_world(self.maps[self.data[1]].map_data)
+            self.map_width, self.map_height = self.screen.get_map_size()
+
+        if data_copy[2] != x: self.data[2] = data_copy[2] - 10
+        if data_copy[3] != y: self.data[3] = data_copy[3] - 3
 
         if not event: return 
         event = read_event(self.data[0], event)
