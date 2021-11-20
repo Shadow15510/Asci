@@ -159,7 +159,9 @@ class Asci:
         # Display and get answer
         if event.text:
             answer_selected = convert(self.screen.display_text(event.text), True)
-            if event.answer and (0 < answer_selected <= event.answer): self.data[0] += answer_selected
+            if event.answer and (0 < answer_selected <= event.answer):
+                self.data[0] += answer_selected
+                self._interaction(direction, cell_content)
 
     def _get_map(self, direction):
         current_coords = self._looked_case(direction)
