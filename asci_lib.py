@@ -1,4 +1,4 @@
-# Asci (version 1.5.3)
+# Asci (version 1.5.4)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -271,6 +271,7 @@ def read_event(xp, event):
 
 def print_text(text):
     for i in text_formater(text):
+        if not i: continue
         print("\n" * 7)
         print(i)
         input()
