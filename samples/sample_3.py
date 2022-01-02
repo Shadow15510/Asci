@@ -1,4 +1,4 @@
-from asci_lib import *
+from asci import *
 from random import randint
 
 

@@ -1,4 +1,4 @@
-from asci_lib import *
+from asci import *
 
 carte_monde = ((
 r"""
