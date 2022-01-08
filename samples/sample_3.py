@@ -41,8 +41,9 @@ cartes = (
 
 
 def pnj(data, stat):
-    xp, carte_actuelle, x, y = data
-    coords = (x, y)
+    carte_actuelle = data[1]
+    coords = data[2], data[3]
+    xp = data[0]["main"]
 
     if carte_actuelle == 0:
         if coords == (24, 4):
@@ -74,8 +75,9 @@ def pnj(data, stat):
 
 
 def ennemi(data, stat):
-    xp, carte_actuelle, x, y = data
-    coords = (x, y)
+    carte_actuelle = data[1]
+    coords = data[2], data[3]
+    xp = data[0]["main"]
 
     if carte_actuelle == 0:
         if coords == (4, 7):
@@ -130,7 +132,7 @@ evenements = {"*": pnj, "$": ennemi}
 touche = {7: affichage_stat}
 
 
-def mon_jeu(stat=[100, 0, 0], data=[0, 0, 0, 0]):
+def mon_jeu(stat=[100, 0, 0], data=[{"main": 0}, 0, 10, 3]):
     rpg_python = Asci(cartes, evenements, touche)
     stat, data = rpg_python.mainloop(5, stat, data=data)
     print("Pour reprendre :")
