@@ -1,4 +1,4 @@
-# Asci (version 1.5.4)
+# Asci (version 1.6.0)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -137,6 +137,10 @@ class Asci:
 
         # Get the event
         event = self._game_events_mapping[cell_content](data_copy, self.stat)
+        if type(event) == tuple:
+            quest, event = event
+        else:
+            quest = "main"
 
         # data modification
         self.data[0] = data_copy[0]
@@ -149,10 +153,10 @@ class Asci:
         if data_copy[3] != y: self.data[3] = data_copy[3] - 3
 
         if not event: return 
-        event = read_event(self.data[0], event)
+        event = read_event(self.data, event, quest)
 
         # XP and stat modification
-        self.data[0] += event.xp_earned
+        self.data[0][quest] += event.xp
         for index, value in event.stat:
             self.stat[index] += value
 
@@ -160,7 +164,7 @@ class Asci:
         if event.text:
             answer_selected = convert(self.screen.display_text(event.text), True)
             if event.answer and (0 < answer_selected <= event.answer):
-                self.data[0] += answer_selected
+                self.data[0][quest] += answer_selected
                 self._interaction(direction, cell_content)
 
     def _get_map(self, direction):
@@ -181,19 +185,19 @@ class Asci:
         if not stat or type(stat) != list: self.stat = [100]
         else: self.stat = stat
 
-        if not data: self.data = [0, 0, 0, 0]
+        if not data: self.data = [{"main": 0}, 0, 0, 0]
         else: self.data = [data[0], data[1], data[2] - 10, data[3] - 3]
 
         self.legend.append(door)
         self.legend.append(walkable)
 
         # Screen and map configuration
-        self.screen.set_world(self.maps[data[1]].map_data)
+        self.screen.set_world(self.maps[self.data[1]].map_data)
         self.map_width, self.map_height = self.screen.get_map_size()
 
         key = key_buffer = 0
 
-        while key != exit_key and self.stat[0] > 0 and self.data[0] < end_game:
+        while key != exit_key and self.stat[0] > 0 and self.data[0]["main"] < end_game:
             self.screen.set_data(self.data[-2:])
 
             self.screen.set_cell(10, 3, player)
@@ -214,8 +218,8 @@ class Asci:
 
 
 class Event:
-    def __init__(self, xp_earned, text, answer=0, *stat):
-        self.xp_earned = xp_earned
+    def __init__(self, xp, text, answer=0, *stat):
+        self.xp = xp
         self.text = text
         self.answer = answer
         self.stat = stat
@@ -258,9 +262,12 @@ def text_formater(string, screen_width=21, screen_height=6):
     return paragraph_formater(lines, screen_height).split("\n\n")
 
 
-def read_event(xp, event):
+def read_event(data, event, quest):
+    if not quest in data[0]:
+        data[0][quest] = 0
+    
     if type(event) == dict:
-        if xp in event: event = event[xp]
+        if data[0][quest] in event: event = event[data[0][quest]]
         else: event = event["base"]
 
     if type(event) != list:
