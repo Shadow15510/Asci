@@ -1,4 +1,4 @@
-# Asci (version 1.6.0)
+# Asci (version 1.6.1)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -247,7 +247,7 @@ def text_formater(string, screen_width=21, screen_height=6):
         while stop_index > 0 and not string[stop_index].isspace(): stop_index -= 1
         if not stop_index: stop_index = screen_width
     
-        return string[:stop_index] + "\n" + line_formater(string[stop_index + 1:], screen_width)
+        return string[:stop_index].strip() + "\n" + line_formater(string[stop_index:].strip(), screen_width)
 
     def paragraph_formater(lines, screen_height):
         if len(lines) < screen_height: return "\n".join(lines)
