@@ -283,7 +283,7 @@ def print_text(text, min_value=0, max_value=0, default_value=0):
         print("\n" * 7)
         print(paragraphs[index])
 
-        if index + 1 == nb and max_value:
+        if index + 1 == nb and (min_value or max_value or default_value) and min_value <= max_value:
             result = input(">")
             try: result = int(result)
             except: result = default_value
