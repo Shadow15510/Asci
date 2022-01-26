@@ -1,4 +1,4 @@
-# Asci (version 1.6.1)
+# Asci (version 1.6.3)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -101,35 +101,32 @@ class Asci:
 
         return -1
 
-    def _keyboard(self, key):
+    def _keyboard(self, key, interaction=True):
         # Interaction while moving
         if key in (1, 3, 5, 2):
             cell_test = self._cell_test(key)
             
+            # Move
+            if cell_test == len(self.legend) - 1:
+                if key == 1: self.data[2] -= 1
+                if key == 3: self.data[2] += 1
+                if key == 5: self.data[3] -= 1
+                if key == 2: self.data[3] += 1            
+            
             # Change map
-            if cell_test == len(self.legend) - 2: # or (self.data[1] and cell_test < 0):
+            elif interaction and cell_test == len(self.legend) - 2: # or (self.data[1] and cell_test < 0):
                 self.data[1], self.data[2], self.data[3] = self._get_map(key)
                 self.screen.set_world(self.maps[self.data[1]].map_data)
                 self.map_width, self.map_height = self.screen.get_map_size()
 
-            # Move
-            elif cell_test == len(self.legend) - 1:
-                if key == 1: self.data[2] -= 1
-                if key == 3: self.data[2] += 1
-                if key == 5: self.data[3] -= 1
-                if key == 2: self.data[3] += 1
 
             # Interaction
-            elif cell_test >= 0: self._interaction(key, cell_test)
+            elif interaction and cell_test >= 0: self._interaction(key, cell_test)
 
         # Custom functions
         elif key in self._game_keys_mapping:
             self.screen.clear()
             self._game_keys_mapping[key](self.data, self.stat)
-
-        # Quit
-        elif key == 9:
-            self.screen.clear()
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
@@ -177,7 +174,7 @@ class Asci:
 
         return current_map, self.data[2], self.data[3]
 
-    def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9):
+    def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9, multi_move="."):
         if exit_key in self._game_keys_mapping:
             raise ValueError("'{}' is already assigned to a function.".format(exit_key))
 
@@ -206,7 +203,11 @@ class Asci:
             if not key: key = key_buffer
             else: key_buffer = key
 
-            self._keyboard(key)
+            if type(key) == str and key[0] == multi_move:
+                for i in list(key[1:]):
+                    self._keyboard(convert(i), False)
+            else:
+                self._keyboard(key)
             
             # Launching the game routine
             if routine: routine(self.data, self.stat)
@@ -283,7 +284,7 @@ def print_text(text, min_value=0, max_value=0, default_value=0):
         print("\n" * 7)
         print(paragraphs[index])
 
-        if index + 1 == nb and max_value:
+        if index + 1 == nb and (min_value or max_value or default_value) and min_value <= max_value:
             result = input(">")
             try: result = int(result)
             except: result = default_value
