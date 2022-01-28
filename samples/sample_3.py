@@ -5,16 +5,21 @@ from random import randint
 cartes = (
 (r"""
  __                      
-/  \___    ###  *        
+/  \___    ###           
 |<>    \  #####    _     
 |^|____|   ###    / \    
-           /_\    |^|   *
+           /_\    |^|    
                          
              __     __ 
-    $   ##  /  \___/  \  ##   
+        ##  /  \___/  \  ##   
        #### |<>     <>| ####
         ##  |_________|  ##
         ||               ||""",
+[
+    ("medecin", "*", 24, 4, "stand by"),
+    ("ami", "*", 16, 1, "stand by"),
+    ("bandit", "$", 4, 7, "walk", 0, ((4, 7), (3, 7), (3, 6), (4, 6)))
+],
 (1, 3, 1, 5, 7),
 (19, 4, 2, 4, 4)),
 
@@ -24,9 +29,10 @@ cartes = (
 |  +  +        +  +  |
 |                    |
 |  +  +        +  +  |
-+--/ *\--------/  \--+
++--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
+[(0, "*", 5, 5, "stand by")],
 (5, 7, 0, 1, 3)),
 
 (r"""
@@ -36,51 +42,41 @@ cartes = (
 |       |
 +--|^|--+
 """,
+[],
 (4, 4, 0, 19, 4))
 )
 
 
-def pnj(data, stat):
+def pnj(data, stat, entites, identifiant):
     carte_actuelle = data[1]
-    coords = data[2], data[3]
     xp = data[0]["main"]
 
     if carte_actuelle == 0:
-        if coords == (24, 4):
+        if identifiant == "medecin":
             if stat[0] < 100: return [0, "Oh, mais tu es blesse !", 0, (0, 50)]
             else: return [0, "Reviens me voir quand tu seras blesse."]
 
-        elif coords == (16, 1): return {
+        elif identifiant == "ami": return {
             "base": [0, "Alors ? T'en sorts-tu ?"],
 
             0: [0, "J'ai une quete pour toi ! Un ami a moi a des problemes : un personnage louche traine autour de sa maison... Si tu pouvais l'en debarasser, il t'en serai reconnaissant. 1. Je m'en charge ! 2. Trouve quelqu'un d'autre.", 2],
-                1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, 0, 10, 10],
+                1: [2, "J'etais sur que je pouvais compter sur toi ! Tiens, voila une dague et une petit bouclier.", 0, (1, 10), (2, 10)],
                 2: [3, "Si un jour tu as besoin de moi, tu seras sympa de m'oublier."],
 
             3: [0, "Alors ? Il est mort ce bandit ?"],
             4: [1, "Merci, tu as rendu un grand service a mon ami !"]
         }
 
-        elif coords == (4, 7):
-            # Si le bandit vient d'être tué
-            if xp == 3: return [1, "Vous avez reussi la quete !"]
-
-            # Si le bandit est encore vivant
-            elif xp < 3: return [0, "Qu'est-ce que tu regardes toi ? Casses-toi !"]
-
-            # Si le bandit est déjà mort
-            else: return [0, "Vous regardez le cadavre froid du bandit."]
-
     return [0, "Hmm ?"]
 
 
-def ennemi(data, stat):
+def ennemi(data, stat, entites, identifiant):
     carte_actuelle = data[1]
     coords = data[2], data[3]
     xp = data[0]["main"]
 
     if carte_actuelle == 0:
-        if coords == (4, 7):
+        if identifiant == "bandit":
             # Bandit vivant
             if xp == 3:
                 if combat(stat, [75, randint(5, 10), randint(5, 10)]):
