@@ -84,4 +84,4 @@ touche = {8: affichage_statistique}
 
 def mon_jeu():
     rpg_python = Asci(cartes, evenements, touche)
-    rpg_python.mainloop(13, [100])
+    rpg_python.mainloop(11, [100], [{"main": 0}, 0, 10, 3])

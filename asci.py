@@ -38,16 +38,16 @@ class Asci:
     def _cell_test(self, direction):
         if direction == 1:
             if self.data[2] - 1 < 0: return -1
-            else: cell = self.screen.get_cell(self.data[2] - 10, self.data[3] - 3, self.data[2] - 1, self.data[3])
+            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2] - 1, self.data[3])
         if direction == 3:
             if self.data[2] + 1 >= self.map_width: return -1
-            else: cell = self.screen.get_cell(self.data[2] - 10, self.data[3] - 3, self.data[2] + 1, self.data[3])
+            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2] + 1, self.data[3])
         if direction == 5:
             if self.data[3] - 1 < 0: return -1
-            else: cell = self.screen.get_cell(self.data[2] - 10, self.data[3] - 3, self.data[2], self.data[3] - 1)
+            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2], self.data[3] - 1)
         if direction == 2:
             if self.data[3] + 1 >= self.map_height: return -1
-            else: cell = self.screen.get_cell(self.data[2] - 10, self.data[3] - 3, self.data[2], self.data[3] + 1)
+            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2], self.data[3] + 1)
 
         print(f"'{cell}'")
         cell_patterns = self._legend
@@ -113,7 +113,7 @@ class Asci:
         data_copy = [self.data[0], self.data[1], x, y, self.data[4]]
 
         # Get the event
-        event = self._game_events_mapping[cell_content](data_copy, self.stat, self.visible_entities, self._get_entity_id(x, y))
+        event = self._game_events_mapping[cell_content](data_copy, self.stat, self.current_map.entities, self._get_entity_id(x, y))
         if type(event) == tuple:
             quest, event = event
         else:
@@ -259,9 +259,11 @@ class Screen:
     def set_cell(self, x_offset, y_offset, x, y, value):
         self._on_screen[y - y_offset][x - x_offset] = value
 
-    def get_cell(self, x_offset, y_offset, x, y):
-        if 0 <= x - x_offset < self.screen_width and 0 <= y - y_offset <= self.screen_height:
-            return self._on_screen[y - y_offset][x - x_offset]
+    def get_cell(self, offsets, x, y):
+        x = x - (offsets[0] - 10)
+        y = y - (offsets[1] - 3)
+        if 0 <= x < self.screen_width and 0 <= y <= self.screen_height:
+            return self._on_screen[y][x]
         else: return " "
 
 class Event:
@@ -365,15 +367,15 @@ def stand_by(entity, data, stat, screen, walkable):
     pass
 
 def follow(entity, data, stat, screen, walkable):
-    if data[4] == 1 and screen.get_cell(data[2] - 10, data[3] - 3, data[2] + 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] + 1, data[3]
-    elif data[4] == 2 and screen.get_cell(data[2] - 10, data[3] - 3, data[2], data[3] - 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] - 1
-    elif data[4] == 3 and screen.get_cell(data[2] - 10, data[3] - 3, data[2] - 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] - 1, data[3]
-    elif data[4] == 5 and screen.get_cell(data[2] - 10, data[3] - 3, data[2], data[3] + 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] + 1
+    if data[4] == 1 and screen.get_cell(data[2: 4], data[2] + 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] + 1, data[3]
+    elif data[4] == 2 and screen.get_cell(data[2: 4], data[2], data[3] - 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] - 1
+    elif data[4] == 3 and screen.get_cell(data[2: 4], data[2] - 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] - 1, data[3]
+    elif data[4] == 5 and screen.get_cell(data[2: 4], data[2], data[3] + 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] + 1
 
 def walk(entity, data, stat, screen, walkable):
     frame = (entity.args[0] + 1) % len(entity.args[1])
     new_x, new_y = entity.args[1][frame]
     print(new_x, new_y)
-    if screen.get_cell(data[2] - 10, data[3] - 3, new_x, new_y) in walkable:
+    if screen.get_cell(data[2: 4], new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
     entity.args[0] = frame

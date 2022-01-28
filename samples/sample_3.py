@@ -67,16 +67,6 @@ def pnj(data, stat, entites, identifiant):
             4: [1, "Merci, tu as rendu un grand service a mon ami !"]
         }
 
-        elif identifiant == "bandit":
-            # Si le bandit vient d'être tué
-            if xp == 3: return [1, "Vous avez reussi la quete !"]
-
-            # Si le bandit est encore vivant
-            elif xp < 3: return [0, "Qu'est-ce que tu regardes toi ? Casses-toi !"]
-
-            # Si le bandit est déjà mort
-            else: return [0, "Vous regardez le cadavre froid du bandit."]
-
     return [0, "Hmm ?"]
 
 
