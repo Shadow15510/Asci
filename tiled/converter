@@ -3,7 +3,7 @@ from sys import argv
 import xmltodict
 
 
-def convert_to_string(filename, doors, misc):
+def convert_to_string(filename, doors, entities):
     output_filename, extension = filename.split('.')
     char_list = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ "
 
@@ -18,32 +18,36 @@ def convert_to_string(filename, doors, misc):
         data = [[int(char_id) for char_id in line.split(",") if char_id] for line in data]
     
     doors_coords = []
-    misc_coords = []
+    entities_data = []
+    entities_count = 0
     output = r""
     for line_index, line in enumerate(data):
         for char_index, char_id in enumerate(line):
-            output += char_list[char_id]
+            
+            if char_list[char_id] not in entities:
+                output += char_list[char_id]
+            else:
+                output += " "
+                entities_data.append(f"({entities_count}, '{char_list[char_id]}', {char_index}, {line_index}, 'stand_by'),")
+                entities_count += 1
 
             if char_list[char_id] in doors:
                 doors_coords.append(f"\t({char_index}, {line_index}, , 0, 0),")
-            
-            if char_list[char_id] in misc:
-                misc_coords.append(f"# {char_list[char_id]} : ({char_index}, {line_index})")
 
         output += "\n"
 
     doors_coords = "\n".join(doors_coords)
-    misc_coords = "\n".join(misc_coords)
+    entities_data = "[\n\t" + "\n\t".join(entities_data) + "\n]"
 
     with open(f"{output_filename}.py", "w") as file:
-        file.write(f"{output_filename} = (r\"\"\"\n{output[:-1]}\"\"\",\n{doors_coords}\n)\n\n{misc_coords}")
+        file.write(f"{output_filename} = (r\"\"\"\n{output[:-1]}\"\"\",\n{entities_data},\n\n{doors_coords}\n)")
 
 
 filename, doors, misc = argv[1], "", ""
 for arg in argv[2:]:
     if arg.startswith("door"):
         doors = arg.split("=", 1)[1]
-    elif arg.startswith("misc"):
-        misc = arg.split("=", 1)[1]
+    elif arg.startswith("entities"):
+        entities = arg.split("=", 1)[1]
 
-convert_to_string(filename, doors, misc)
+convert_to_string(filename, doors, entities)
