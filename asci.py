@@ -1,4 +1,4 @@
-# Asci (version 1.6.3)
+# Asci (version 1.7.0)
 
 class Screen:
     def __init__(self, screen_width=21, screen_height=6):
@@ -15,8 +15,7 @@ class Screen:
         self.map_width = max([len(line) for line in self._world])
         self.map_height = len(self._world)
 
-    def set_data(self, coords):
-        x, y = coords
+    def set_data(self, x, y):
         for x_map in range(x, x + self.screen_width):
             for y_map in range(y, y + self.screen_height):
                 self._data[y_map - y][x_map - x] = " "
@@ -61,6 +60,8 @@ class Asci:
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
+        self.current_map = None
+        self.visible_entities = []
 
     def _looked_case(self, direction):
         # Left
@@ -83,16 +84,16 @@ class Asci:
 
     def _cell_test(self, direction):
         if direction == 1:
-            if self.data[-2] + 9 < 0: return -1
+            if self.data[2] + 9 < 0: return -1
             else: cell = self.screen.get_cell(9, 3)
         if direction == 3:
-            if self.data[-2] + 11 >= self.map_width: return -1
+            if self.data[2] + 11 >= self.map_width: return -1
             else: cell = self.screen.get_cell(11, 3)
         if direction == 5:
-            if self.data[-1] + 2 < 0: return -1
+            if self.data[3] + 2 < 0: return -1
             else: cell = self.screen.get_cell(10, 2)
         if direction == 2:
-            if self.data[-1] + 4 >= self.map_height: return -1
+            if self.data[3] + 4 >= self.map_height: return -1
             else: cell = self.screen.get_cell(10, 4)
 
         cell_patterns = self.legend
@@ -116,7 +117,9 @@ class Asci:
             # Change map
             elif interaction and cell_test == len(self.legend) - 2: # or (self.data[1] and cell_test < 0):
                 self.data[1], self.data[2], self.data[3] = self._get_map(key)
-                self.screen.set_world(self.maps[self.data[1]].map_data)
+                self.current_map = self.maps[self.data[1]]
+                self.screen.set_world(self.current_map.map_data)
+                self._get_visible_entities()
                 self.map_width, self.map_height = self.screen.get_map_size()
 
 
@@ -130,10 +133,10 @@ class Asci:
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
-        data_copy = [self.data[0], self.data[1], x, y]
+        data_copy = [self.data[0], self.data[1], x, y, self.data[4]]
 
         # Get the event
-        event = self._game_events_mapping[cell_content](data_copy, self.stat)
+        event = self._game_events_mapping[cell_content](data_copy, self.stat, self._get_entity_id(x, y))
         if type(event) == tuple:
             quest, event = event
         else:
@@ -166,14 +169,27 @@ class Asci:
 
     def _get_map(self, direction):
         current_coords = self._looked_case(direction)
-        current_map = self.data[1]
 
-        for coords in self.maps[current_map].coords:
+        for coords in self.current_map.coords:
             if coords[:2] == current_coords:
                 return coords[2], coords[3] - 10, coords[4] - 3
 
-        return current_map, self.data[2], self.data[3]
+        return self.data[1], self.data[2], self.data[3]
 
+    # Entites gestion
+    def _get_visible_entities(self):
+        self.visible_entities = []
+        for entity in self.current_map.entities:
+            symbol, x, y = self.current_map.entities[entity]
+            if (0 <= x - self.data[2] < self.screen.screen_width) and (0 <= y - self.data[3] < self.screen.screen_height):
+                self.visible_entities.append((symbol, x, y, entity))
+
+    def _get_entity_id(self, x, y):
+        for _, entity_x, entity_y, entity_id in self.visible_entities:
+            if entity_x == x and entity_y == y:
+                return entity_id
+
+    # Mainloop
     def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9, multi_move="."):
         if exit_key in self._game_keys_mapping:
             raise ValueError("'{}' is already assigned to a function.".format(exit_key))
@@ -182,40 +198,51 @@ class Asci:
         if not stat or type(stat) != list: self.stat = [100]
         else: self.stat = stat
 
-        if not data: self.data = [{"main": 0}, 0, 0, 0]
-        else: self.data = [data[0], data[1], data[2] - 10, data[3] - 3]
+        if not data: self.data = [{"main": 0}, 0, 0, 0, 0]
+        else: self.data = [data[0], data[1], data[2] - 10, data[3] - 3, 0]
 
         self.legend.append(door)
         self.legend.append(walkable)
 
         # Screen and map configuration
-        self.screen.set_world(self.maps[self.data[1]].map_data)
+        self.current_map = self.maps[self.data[1]]
+        self.screen.set_world(self.current_map.map_data)
         self.map_width, self.map_height = self.screen.get_map_size()
 
-        key = key_buffer = 0
+        key = 0
 
         while key != exit_key and self.stat[0] > 0 and self.data[0]["main"] < end_game:
-            self.screen.set_data(self.data[-2:])
-
+            # Update the map
+            self.screen.set_data(self.data[2], self.data[3])
+            
+            # Display the player and entites over it
             self.screen.set_cell(10, 3, player)
+            self._get_visible_entities()
+            for symbol, x, y, _ in self.visible_entities:
+                self.screen.set_cell(x - self.data[2], y - self.data[3], symbol)
+            
+            # Display map and get the key
             key = convert(self.screen.display())
 
-            if not key: key = key_buffer
-            else: key_buffer = key
+            if not key: key = self.data[4]
+            else: self.data[4] = key
 
             if type(key) == str and key[0] == multi_move:
                 for i in list(key[1:]):
                     self._keyboard(convert(i), False)
+                    self.data[4] = convert(key[-1])
             else:
                 self._keyboard(key)
             
             # Launching the game routine
-            if routine: routine(self.data, self.stat)
+            if routine:
+                data_copy = [self.data[0], self.data[1], self.data[2] + 10, self.data[3] + 3, self.data[4]]
+                routine(data_copy, self.stat)
 
         if self.stat[0] <= 0: self.stat[0] = 100
         self.data[2] += 10
         self.data[3] += 3
-        return self.stat, self.data
+        return self.stat, self.data[:-1]
 
 
 class Event:
@@ -227,8 +254,9 @@ class Event:
 
 
 class Map:
-    def __init__(self, map_data, *coords):
+    def __init__(self, map_data, entities, *coords):
         self.map_data = map_data
+        self.entities = entities
         self.coords = coords
 
 
