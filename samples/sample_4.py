@@ -12,9 +12,9 @@ cartes = (
 
 
 |==|==|==|==|==|==|==|""",
-{
-    "pnj": ["?", 2, 5]
-},
+[
+    ("pnj", "?", 2, 5, "stand by")
+],
 (1, 3, 1, 5, 7)),
 
 (r"""
@@ -26,15 +26,15 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-{
-    "boulanger": ["?", 9, 1],
-    "kiosque": ["?", 20, 1],
-},
+[
+    ("boulanger", "?", 9, 1, "stand by"),
+    ("kiosque", "?", 20, 1, "stand by")
+],
 (5, 7, 0, 1, 3))
 )
 
 
-def pnj(data, stat, identifiant):
+def pnj(data, stat, entites, identifiant):
     if identifiant == "pnj":
         # Si les deux quêtes annexes sont terminées, on incrémente la quête principale
         if "pain" in data[0] and "journal" in data[0] and data[0]["pain"] == 3 and data[0]["journal"] == 3:
@@ -56,7 +56,6 @@ def pnj(data, stat, identifiant):
                 3: [0, "Alors ? J'attend moi !"], # Si le joueur a accepté la quête, mais n'a été cherché ni le pain, ni le journal
                 4: [1, "Merci, pour ces commissions !"] # Si le joueur a terminé la quête
             }
-
 
     elif identifiant == "boulanger":
         if "pain" in data[0] and data[0]["pain"] == 1: return "pain", [1, "Tient voila pour toi ! [+PAIN]"]

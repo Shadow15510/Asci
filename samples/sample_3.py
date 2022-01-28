@@ -15,11 +15,11 @@ cartes = (
        #### |<>     <>| ####
         ##  |_________|  ##
         ||               ||""",
-{
-    "medecin": ["*", 24, 4],
-    "ami": ["*", 16, 1],
-    "bandit": ["$", 4, 7]
-},
+[
+    ("medecin", "*", 24, 4, "stand by"),
+    ("ami", "*", 16, 1, "stand by"),
+    ("bandit", "$", 4, 7, "walk", 0, ((4, 7), (3, 7), (3, 6), (4, 6)))
+],
 (1, 3, 1, 5, 7),
 (19, 4, 2, 4, 4)),
 
@@ -32,7 +32,7 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-{0: ["*", 5, 5]},
+[(0, "*", 5, 5, "stand by")],
 (5, 7, 0, 1, 3)),
 
 (r"""
@@ -42,12 +42,12 @@ cartes = (
 |       |
 +--|^|--+
 """,
-{},
+[],
 (4, 4, 0, 19, 4))
 )
 
 
-def pnj(data, stat, identifiant):
+def pnj(data, stat, entites, identifiant):
     carte_actuelle = data[1]
     xp = data[0]["main"]
 
@@ -80,7 +80,7 @@ def pnj(data, stat, identifiant):
     return [0, "Hmm ?"]
 
 
-def ennemi(data, stat, identifiant):
+def ennemi(data, stat, entites, identifiant):
     carte_actuelle = data[1]
     coords = data[2], data[3]
     xp = data[0]["main"]

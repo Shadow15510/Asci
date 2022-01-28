@@ -12,7 +12,9 @@ cartes = (
 
 
 |==|==|==|==|==|==|==|""",
-{1: ["*", 2, 5]},
+[
+    (1, "*", 2, 5, "stand by")
+],
 (1, 3, 1, 5, 7)),
 
 (r"""
@@ -24,13 +26,15 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-{"habitant": ["?", 9, 1],
-"voleur": ["?", 20, 1]},
+[
+    ("habitant", "?", 9, 1, "stand by"),
+    ("voleur", "?", 20, 1, "stand by")
+],
 (5, 7, 0, 1, 3))
 )
 
 
-def pnj(data, stat, identifiant):
+def pnj(data, stat, entites, identifiant):
     carte_actuelle = data[1]
     
     if carte_actuelle == 0:
