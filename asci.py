@@ -201,7 +201,8 @@ class Asci:
             if type(key) == str and key[0] == multi_move:
                 for i in list(key[1:]):
                     self._keyboard(convert(i), False)
-                    self.data[4] = convert(key[-1])
+                    self.screen.set_screen(self.data[2], self.data[3])
+                self.data[4] = convert(key[-1])
             else:
                 self._keyboard(key)
             
