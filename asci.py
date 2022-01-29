@@ -1,4 +1,4 @@
-# Asci (1.7.0)
+# Asci (1.7.1)
 
 class Asci:
     def __init__(self, maps, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
@@ -38,18 +38,17 @@ class Asci:
     def _cell_test(self, direction):
         if direction == 1:
             if self.data[2] - 1 < 0: return -1
-            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2] - 1, self.data[3])
+            else: cell = self.screen.get_cell(self.data[2] - 1, self.data[3])
         if direction == 3:
             if self.data[2] + 1 >= self.map_width: return -1
-            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2] + 1, self.data[3])
+            else: cell = self.screen.get_cell(self.data[2] + 1, self.data[3])
         if direction == 5:
             if self.data[3] - 1 < 0: return -1
-            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2], self.data[3] - 1)
+            else: cell = self.screen.get_cell(self.data[2], self.data[3] - 1)
         if direction == 2:
             if self.data[3] + 1 >= self.map_height: return -1
-            else: cell = self.screen.get_cell(self.data[2: 4], self.data[2], self.data[3] + 1)
+            else: cell = self.screen.get_cell(self.data[2], self.data[3] + 1)
 
-        print(f"'{cell}'")
         cell_patterns = self._legend
         for pattern_index in range(len(cell_patterns)):
             if cell in cell_patterns[pattern_index]: return pattern_index
@@ -113,7 +112,8 @@ class Asci:
         data_copy = [self.data[0], self.data[1], x, y, self.data[4]]
 
         # Get the event
-        event = self._game_events_mapping[cell_content](data_copy, self.stat, self.current_map.entities, self._get_entity_id(x, y))
+        entities = {entity.entity_id: entity for entity in self.current_map.entities}
+        event = self._game_events_mapping[cell_content](data_copy, self.stat, entities, self._get_entity_id(x, y))
         if type(event) == tuple:
             quest, event = event
         else:
@@ -178,6 +178,7 @@ class Asci:
         self._legend.append(door)
         self._legend.append(walkable)
         self._change_map(data[1])
+        self.screen.load_data(self.data)
 
         key = 0
 
@@ -186,10 +187,10 @@ class Asci:
             self.screen.set_screen(self.data[2], self.data[3])
             
             # Compute the player's and entities' positions
-            self.screen.set_cell(self.data[2] - 10, self.data[3] - 3, self.data[2], self.data[3], player)
+            self.screen.set_cell(self.data[2], self.data[3], player)
             self._run_entities_behaviors()
             for entity in self.visible_entities.values():
-                self.screen.set_cell(self.data[2] - 10, self.data[3] - 3, entity.pos_x, entity.pos_y, entity.symbol)
+                self.screen.set_cell(entity.pos_x, entity.pos_y, entity.symbol)
             
             # Display map and get the key
             key = convert(self.screen.display())
@@ -220,6 +221,10 @@ class Screen:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self._on_screen = [[" " for _ in range(screen_width)] for _ in range(screen_height)]
+        self._asci_data = []
+
+    def load_data(self, data):
+        self._asci_data = data
 
     def get_map_size(self):
         return self.map_width, self.map_height
@@ -256,12 +261,14 @@ class Screen:
             if index + 1 == nb_par: return input(">")
             else: input()
     
-    def set_cell(self, x_offset, y_offset, x, y, value):
-        self._on_screen[y - y_offset][x - x_offset] = value
+    def set_cell(self, x, y, value):
+        x = x - (self._asci_data[2] - 10)
+        y = y - (self._asci_data[3] - 3)
+        self._on_screen[y][x] = value
 
-    def get_cell(self, offsets, x, y):
-        x = x - (offsets[0] - 10)
-        y = y - (offsets[1] - 3)
+    def get_cell(self, x, y):
+        x = x - (self._asci_data[2] - 10)
+        y = y - (self._asci_data[3] - 3)
         if 0 <= x < self.screen_width and 0 <= y <= self.screen_height:
             return self._on_screen[y][x]
         else: return " "
@@ -367,15 +374,15 @@ def stand_by(entity, data, stat, screen, walkable):
     pass
 
 def follow(entity, data, stat, screen, walkable):
-    if data[4] == 1 and screen.get_cell(data[2: 4], data[2] + 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] + 1, data[3]
-    elif data[4] == 2 and screen.get_cell(data[2: 4], data[2], data[3] - 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] - 1
-    elif data[4] == 3 and screen.get_cell(data[2: 4], data[2] - 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] - 1, data[3]
-    elif data[4] == 5 and screen.get_cell(data[2: 4], data[2], data[3] + 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] + 1
+    if data[4] == 1 and screen.get_cell(data[2] + 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] + 1, data[3]
+    elif data[4] == 2 and screen.get_cell(data[2], data[3] - 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] - 1
+    elif data[4] == 3 and screen.get_cell(data[2] - 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] - 1, data[3]
+    elif data[4] == 5 and screen.get_cell(data[2], data[3] + 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] + 1
 
 def walk(entity, data, stat, screen, walkable):
     frame = (entity.args[0] + 1) % len(entity.args[1])
     new_x, new_y = entity.args[1][frame]
     print(new_x, new_y)
-    if screen.get_cell(data[2: 4], new_x, new_y) in walkable:
+    if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
     entity.args[0] = frame

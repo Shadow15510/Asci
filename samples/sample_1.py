@@ -19,7 +19,6 @@ maison = (r"""
 carte_monde = (maison,)
 
 
-
 def pnj(data, stat, entites, identifiant):
     xp = data[0]["main"]
 
