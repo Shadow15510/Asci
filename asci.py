@@ -1,4 +1,4 @@
-# Asci (1.7.1)
+# Asci (1.7.2)
 
 class Asci:
     def __init__(self, maps, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
@@ -11,14 +11,13 @@ class Asci:
         self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5)}
         
         # Custom entities behavior
-        self._behaviors = {"stand by": stand_by, "follow": follow, "walk": walk}
+        self._behaviors = {"permanent": permanent, "stand by": stand_by, "follow": follow, "walk": walk}
         if behaviors:
             for i in behaviors: self._behaviors[i] = behaviors[i]
 
         # Screen initialisation
         self.screen = Screen(screen_width, screen_height)
         self.current_map = None
-        self.visible_entities = []
 
     def _looked_case(self, direction):
         if direction == 1: # Left
@@ -65,12 +64,12 @@ class Asci:
                 if key == 1: self.data[2] -= 1
                 if key == 3: self.data[2] += 1
                 if key == 5: self.data[3] -= 1
-                if key == 2: self.data[3] += 1            
-            
+                if key == 2: self.data[3] += 1
+
             # Change map
             elif interaction and cell_test == len(self._legend) - 2:
                 new_map, self.data[2], self.data[3] = self._get_map(key)
-                self._change_map(new_map)
+                if self.data[1] != new_map: self._change_map(new_map)
 
             # Interaction
             elif interaction and cell_test >= 0: self._interaction(key, cell_test)
@@ -92,10 +91,11 @@ class Asci:
     def _change_map(self, new_map):
         # Update entities
         if self.current_map:
-            for i in range(len(self.current_map.entities)):
+            for i in self.current_map.entities.copy():
                 entity = self.current_map.entities[i]
                 if entity.behavior == "follow":
-                    self.maps[new_map].entities.append(entity)
+                    entity.pos_x = entity.pos_y = -1
+                    self.maps[new_map].entities[entity.entity_id] = entity
                     self.maps[self.data[1]].entities.pop(i)
 
         # Update current map
@@ -105,15 +105,13 @@ class Asci:
         # Update screen configuration
         self.screen.set_world(self.current_map.map_data)
         self.map_width, self.map_height = self.screen.get_map_size()
-        self._get_visible_entities()
 
     def _interaction(self, direction, cell_content):
         x, y = self._looked_case(direction)
         data_copy = [self.data[0], self.data[1], x, y, self.data[4]]
 
         # Get the event
-        entities = {entity.entity_id: entity for entity in self.current_map.entities}
-        event = self._game_events_mapping[cell_content](data_copy, self.stat, entities, self._get_entity_id(x, y))
+        event = self._game_events_mapping[cell_content](data_copy, self.stat, self.current_map.entities, self._get_entity_id(x, y))
         if type(event) == tuple:
             quest, event = event
         else:
@@ -142,24 +140,10 @@ class Asci:
                 self.data[0][quest] += answer_selected
                 self._interaction(direction, cell_content)
 
-    # Entities gestion
-    def _get_visible_entities(self):
-        self.visible_entities = {}
-        for entity in self.current_map.entities:
-            if (0 <= entity.pos_x - self.data[2] + 10 < self.screen.screen_width) and (0 <= entity.pos_y - self.data[3] + 3 < self.screen.screen_height):
-                self.visible_entities[entity.entity_id] =  entity
-
     def _get_entity_id(self, x, y):
-        for entity_id in self.visible_entities:
-            entity = self.visible_entities[entity_id]
+        for entity in self.current_map.entities.values():
             if entity.pos_x == x and entity.pos_y == y:
-                return entity_id
-
-    def _run_entities_behaviors(self):
-        for entity in self.current_map.entities:
-            data_copy = get_data_copy(self.data)
-            self._behaviors[entity.behavior](entity, data_copy, self.stat, self.screen, self.walkable)
-        self._get_visible_entities()
+                return entity.entity_id
 
     # Mainloop
     def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9, multi_move="."):
@@ -174,7 +158,6 @@ class Asci:
         else: self.data = [data[0], data[1], data[2], data[3], 0]
 
         # Configuration
-        self.walkable = walkable
         self._legend.append(door)
         self._legend.append(walkable)
         self._change_map(data[1])
@@ -184,31 +167,37 @@ class Asci:
 
         while key != exit_key and self.stat[0] > 0 and self.data[0]["main"] < end_game:
             # Update the map
-            self.screen.set_screen(self.data[2], self.data[3])
+            self.screen.set_screen()
             
             # Compute the player's and entities' positions
-            self.screen.set_cell(self.data[2], self.data[3], player)
-            self._run_entities_behaviors()
-            for entity in self.visible_entities.values():
-                self.screen.set_cell(entity.pos_x, entity.pos_y, entity.symbol)
-            
-            # Display map and get the key
-            key = convert(self.screen.display())
+            data_copy = self.data[:]
+            for entity in self.current_map.entities.values():
+                self._behaviors[entity.behavior](entity, data_copy, self.stat, self.screen, walkable)
+                if (0 <= entity.pos_x - self.data[2] + 10 < self.screen.screen_width) and (0 <= entity.pos_y - self.data[3] + 3 < self.screen.screen_height):
+                    self.screen.set_cell(entity.pos_x, entity.pos_y, entity.symbol)
 
+            self.screen.set_cell(self.data[2], self.data[3], player)
+            
+            # Display map, get the key and update key buffer
+            key = convert(self.screen.display())
             if not key: key = self.data[4]
             else: self.data[4] = key
 
+            # Multi-move and key gestion
             if type(key) == str and key[0] == multi_move:
-                for i in list(key[1:]):
-                    self._keyboard(convert(i), False)
-                    self.screen.set_screen(self.data[2], self.data[3])
-                self.data[4] = convert(key[-1])
+                key = key[1:]
+                for k, r in get_multi_move(key):
+                    for _ in range(r):
+                        self._keyboard(k, False)
+                        self.screen.set_screen()
+
+                self.data[4] = k
             else:
                 self._keyboard(key)
             
             # Launching the game routine
             if routine:
-                data_copy = get_data_copy(self.data)
+                data_copy = self.data[:]
                 routine(data_copy, self.stat)
 
         if self.stat[0] <= 0: self.stat[0] = 100
@@ -235,14 +224,15 @@ class Screen:
         self.map_width = max([len(line) for line in self._world])
         self.map_height = len(self._world)
 
-    def set_screen(self, x, y):
-        x -= 10 ; y -= 3
+    def set_screen(self):
+        x = self._asci_data[2] - 10 ; y = self._asci_data[3] - 3
         for x_map in range(x, x + self.screen_width):
             for y_map in range(y, y + self.screen_height):
                 self._on_screen[y_map - y][x_map - x] = " "
                 if 0 <= x_map < self.map_width and 0 <= y_map < self.map_height:
                     try: self._on_screen[y_map - y][x_map - x] = self._world[y_map][x_map]
                     except: pass
+
 
     def display(self, return_input=True):
         for line in self._on_screen:
@@ -265,12 +255,13 @@ class Screen:
     def set_cell(self, x, y, value):
         x = x - (self._asci_data[2] - 10)
         y = y - (self._asci_data[3] - 3)
-        self._on_screen[y][x] = value
+        if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
+            self._on_screen[y][x] = value
 
     def get_cell(self, x, y):
         x = x - (self._asci_data[2] - 10)
         y = y - (self._asci_data[3] - 3)
-        if 0 <= x < self.screen_width and 0 <= y <= self.screen_height:
+        if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
             return self._on_screen[y][x]
         else: return " "
 
@@ -285,8 +276,8 @@ class Event:
 class Map:
     def __init__(self, map_data, entities, *coords):
         self.map_data = map_data
-        if entities: self.entities = [Entity(*i) for i in entities]
-        else: self.entities = []
+        if entities: self.entities = {i[0]: Entity(*i) for i in entities}
+        else: self.entities = {}
         self.coords = coords
 
 class Entity:
@@ -299,7 +290,7 @@ class Entity:
         self.args = list(args)
 
     def change_behavior(self, new_behavior):
-        self.behavior = new_behavior
+        if self.behavior != "permanent": self.behavior = new_behavior
 
 
 # Functions used by Asci
@@ -313,18 +304,24 @@ def convert(string, force_int=False):
 def text_formater(string, screen_width=21, screen_height=6):
 
     def line_formater(string, screen_width):
-        if len(string) <= screen_width: return string
+        string_result = ""        
+        while len(string) > screen_width:
+            stop_index = screen_width
+            while stop_index > 0 and not string[stop_index].isspace(): stop_index -= 1
+            if not stop_index: stop_index = screen_width
 
-        stop_index = screen_width
-        while stop_index > 0 and not string[stop_index].isspace(): stop_index -= 1
-        if not stop_index: stop_index = screen_width
-    
-        return string[:stop_index].strip() + "\n" + line_formater(string[stop_index:].strip(), screen_width)
+            string_result += string[:stop_index].strip() + "\n"
+            string = string[stop_index:].strip()
+
+        return string_result + string
 
     def paragraph_formater(lines, screen_height):
-        if len(lines) < screen_height: return "\n".join(lines)
+        paragraphs = ""
+        while len(lines) >= screen_height:
+            paragraphs += "\n".join(lines[:screen_height]) + "\n\n"
+            lines = lines[screen_height:]
 
-        return "\n".join(lines[:screen_height]) + "\n\n" + paragraph_formater(lines[screen_height:], screen_height)
+        return paragraphs + "\n".join(lines)
 
     lines = []
     for line in string.split("\n"):
@@ -348,8 +345,25 @@ def read_event(data, event, quest):
     return Event(*event)
 
 
-def get_data_copy(data):
-    return [data[0], data[1], data[2], data[3], data[4]]
+def get_multi_move(key):
+    if "," in key:
+        result = []
+        for k in key.split(","):
+            if "*" in k:
+                k = k.split("*")
+                result.append((convert(k[0]), convert(k[1])))
+            else:
+                result.append((convert(k), 1))
+
+        return result
+    
+    elif "*" in key:
+        key = key.split("*")
+        return [(convert(key[0]), convert(key[1]))]
+    
+    else:
+        return [(convert(k), 1) for k in key]
+
 
 
 # Extra functions
@@ -374,16 +388,24 @@ def print_text(text, min_value=0, max_value=0, default_value=0):
 def stand_by(entity, data, stat, screen, walkable):
     pass
 
+def permanent(entity, data, stat, screen, walkable):
+    pass
+
+
 def follow(entity, data, stat, screen, walkable):
-    if data[4] == 1 and screen.get_cell(data[2] + 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] + 1, data[3]
-    elif data[4] == 2 and screen.get_cell(data[2], data[3] - 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] - 1
-    elif data[4] == 3 and screen.get_cell(data[2] - 1, data[3]) in walkable: entity.pos_x, entity.pos_y = data[2] - 1, data[3]
-    elif data[4] == 5 and screen.get_cell(data[2], data[3] + 1) in walkable: entity.pos_x, entity.pos_y = data[2], data[3] + 1
+    if entity.pos_x == entity.pos_y == -1:
+        entity.pos_x, entity.pos_y = data[2], data[3]
+
+    elif data[4] in (1, 2, 3, 5):
+        if entity.args: walkable += entity.args[0]
+        cases = ((data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), 0, (data[2], data[3] + 1))[data[4] - 1]
+        if not (0 <= cases[0] < screen.map_width and 0 <= cases[1] < screen.map_height): entity.pos_x, entity.pos_y = data[2], data[3]
+        elif screen.get_cell(cases[0], cases[1]) in walkable: entity.pos_x, entity.pos_y = cases
+
 
 def walk(entity, data, stat, screen, walkable):
     frame = (entity.args[0] + 1) % len(entity.args[1])
     new_x, new_y = entity.args[1][frame]
-    print(new_x, new_y)
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
     entity.args[0] = frame
