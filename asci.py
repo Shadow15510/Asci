@@ -1,4 +1,4 @@
-# Asci (1.5.0)
+# Asci (1.8.0)
 
 class Asci:
     def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
