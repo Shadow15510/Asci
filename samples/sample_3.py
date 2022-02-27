@@ -15,11 +15,6 @@ cartes = (
        #### |<>     <>| ####
         ##  |_________|  ##
         ||               ||""",
-[
-    ("medecin", "*", 24, 4, "stand by"),
-    ("ami", "*", 16, 1, "stand by"),
-    ("bandit", "$", 4, 7, "walk", 0, ((4, 7), (3, 7), (3, 6), (4, 6)))
-],
 (1, 3, 1, 5, 7),
 (19, 4, 2, 4, 4)),
 
@@ -32,7 +27,6 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-[(0, "*", 5, 5, "stand by")],
 (5, 7, 0, 1, 3)),
 
 (r"""
@@ -42,10 +36,15 @@ cartes = (
 |       |
 +--|^|--+
 """,
-[],
 (4, 4, 0, 19, 4))
 )
 
+entites = (
+    ["medecin", "*", 0, 24, 4, "stand by"],
+    ["ami", "*", 0, 16, 1, "stand by"],
+    ["bandit", "$", 0, 4, 7, "walk", 0, ((4, 7), (3, 7), (3, 6), (4, 6))],
+    [0, "*", 1, 5, 5, "stand by"]
+)
 
 def pnj(data, stat, entites, identifiant):
     carte_actuelle = data[1]
@@ -129,7 +128,7 @@ touche = {7: affichage_stat}
 
 
 def mon_jeu(stat=[100, 0, 0], data=[{"main": 0}, 0, 10, 3]):
-    rpg_python = Asci(cartes, evenements, touche)
+    rpg_python = Asci(cartes, entites, evenements, touche)
     stat, data = rpg_python.mainloop(5, stat, data=data)
     print("Pour reprendre :")
     print("mon_jeu({}, {})".format(stat, data))

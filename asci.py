@@ -1,17 +1,18 @@
-# Asci (1.7.3)
+# Asci (1.5.0)
 
 class Asci:
-    def __init__(self, maps, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
+    def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
         # Load maps and entities
-        self.maps = []
+        self.maps = [Map(*i) for i in maps]
         self.entities = {}
-        for index, raw_map in [(i, maps[i]) for i in range(len(maps))]:
-            for j in raw_map[1]:
-                if j[0] in self.entities: raise KeyError("'{}' is already a registered entities".format(j[0]))
-                else: self.entities[j[0]] = Entity(index, *j)
-            raw_map = list(raw_map)
-            raw_map.pop(1)
-            self.maps.append(Map(*raw_map))
+        entity_id = 0
+        for i in entities:
+            if not i[0]:
+                i[0] = entity_id
+                entity_id += 1
+
+            if i[0] in self.entities: raise KeyError("'{}' is already a registered entities".format(i[0]))
+            else: self.entities[i[0]] = Entity(*i)
         
         # Custom functions
         self._legend = list(events_mapping.keys())
@@ -100,6 +101,7 @@ class Asci:
         # Update map id and data
         old_map, self.data[1] = self.data[1], new_map
         self.current_map = self.maps[self.data[1]]
+        self.current_map.entities = {}
 
         # Update entities
         for i in self.entities:
@@ -167,7 +169,7 @@ class Asci:
         # Configuration
         self._legend.append(door)
         self._legend.append(walkable)
-        self._change_map(data[1])
+        self._change_map(self.data[1])
         self.screen.load_data(self.data)
 
         key = 0
@@ -287,7 +289,7 @@ class Map:
         self.entities = {}
 
 class Entity:
-    def __init__(self, map_id, entity_id, symbol, x, y, behavior, *args):
+    def __init__(self, entity_id, symbol, map_id, x, y, behavior, *args):
         self.entity_id = entity_id
         self.symbol = symbol
         self.map_id = map_id

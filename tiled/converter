@@ -19,7 +19,6 @@ def convert_to_string(filename, doors, entities):
     
     doors_coords = []
     entities_data = []
-    entities_count = 0
     output = r""
     for line_index, line in enumerate(data):
         for char_index, char_id in enumerate(line):
@@ -28,8 +27,8 @@ def convert_to_string(filename, doors, entities):
                 output += char_list[char_id]
             else:
                 output += " "
-                entities_data.append(f"({entities_count}, '{char_list[char_id]}', {char_index}, {line_index}, 'stand_by'),")
-                entities_count += 1
+                entities_data.append(f"[None, '{char_list[char_id]}', , {char_index}, {line_index}, 'stand_by'],")
+                
 
             if char_list[char_id] in doors:
                 doors_coords.append(f"\t({char_index}, {line_index}, , 0, 0),")
@@ -37,10 +36,10 @@ def convert_to_string(filename, doors, entities):
         output += "\n"
 
     doors_coords = "\n".join(doors_coords)
-    entities_data = "[\n\t" + "\n\t".join(entities_data) + "\n]"
+    entities_data = "(\n\t" + "\n\t".join(entities_data) + "\n)"
 
     with open(f"{output_filename}.py", "w") as file:
-        file.write(f"{output_filename} = (r\"\"\"\n{output[:-1]}\"\"\",\n{entities_data},\n\n{doors_coords}\n)")
+        file.write(f"{output_filename} = (r\"\"\"\n{output[:-1]}\"\"\",\n{doors_coords}\n)\n\n{output_filename}_entities = {entities_data}")
 
 
 filename, doors, misc = argv[1], "", ""

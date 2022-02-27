@@ -12,9 +12,6 @@ cartes = (
 
 
 |==|==|==|==|==|==|==|""",
-[
-    (1, "*", 2, 5, "stand by")
-],
 (1, 3, 1, 5, 7)),
 
 (r"""
@@ -26,13 +23,14 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-[
-    ("habitant", "?", 9, 1, "stand by"),
-    ("voleur", "?", 20, 1, "stand by")
-],
 (5, 7, 0, 1, 3))
 )
 
+entites = (
+    [1, "*", 0, 2, 5, "stand by"],
+    ["habitant", "?", 1, 9, 1, "stand by"],
+    ["voleur", "?", 1, 20, 1, "stand by"]
+)
 
 def pnj(data, stat, entites, identifiant):
     carte_actuelle = data[1]
@@ -83,5 +81,5 @@ touche = {8: affichage_statistique}
 
 
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, touche)
+    rpg_python = Asci(cartes, entites, evenements, touche)
     rpg_python.mainloop(11, [100], [{"main": 0}, 0, 10, 3])
