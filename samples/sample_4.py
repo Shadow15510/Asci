@@ -12,9 +12,6 @@ cartes = (
 
 
 |==|==|==|==|==|==|==|""",
-[
-    ("pnj", "?", 2, 5, "stand by")
-],
 (1, 3, 1, 5, 7)),
 
 (r"""
@@ -26,13 +23,14 @@ cartes = (
 +--/  \--------/  \--+
 |                    |
 +---|^|--------------+""",
-[
-    ("boulanger", "?", 9, 1, "stand by"),
-    ("kiosque", "?", 20, 1, "stand by")
-],
 (5, 7, 0, 1, 3))
 )
 
+entites = (
+    ["pnj", "?", 0, 2, 5, "stand by"],
+    ["boulanger", "?", 1, 9, 1, "stand by"],
+    ["kiosque", "?", 1, 20, 1, "stand by"]
+)
 
 def pnj(data, stat, entites, identifiant):
     if identifiant == "pnj":
@@ -80,5 +78,5 @@ touche = {8: affichage_statistique}
 
 
 def mon_jeu():
-    rpg_python = Asci(cartes, evenements, touche)
-    stat, data = rpg_python.mainloop(5, [100])
+    rpg_python = Asci(cartes, entites, evenements, touche)
+    stat, data = rpg_python.mainloop(5, [100], [{"main": 0}, 0, 10, 3])

@@ -10,11 +10,6 @@ exterieur = (r"""
 
 
 |==|==|==|==|==|==|==|""",
-# Entités
-[
-    ("sdf", "*", 2, 5, "stand by")
-],
-
 # Points de passage
 (1, 3, 1, 3, 5))
 
@@ -27,15 +22,14 @@ interieur = (r"""
 |          |
 +-|^|------+
 """,
-# Entités
-[],
-
 # Points de passage
 (3, 5, 0, 1, 3))
 
 
-
 carte_monde = (exterieur, interieur)
+entites = (
+    ["sdf", "*", 0, 2, 5, "stand by"],
+)
 
 
 def pnj(data, stat, entites, identifiant):
@@ -79,5 +73,5 @@ touche = {6: affichage_stat}
 
 
 def mon_jeu():
-    rpg_python = Asci(carte_monde, evenements, touche)
+    rpg_python = Asci(carte_monde, entites, evenements, touche)
     rpg_python.mainloop(10, stat=[100, 5], data=[{"main": 0}, 0, 10, 3])
