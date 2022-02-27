@@ -2,11 +2,11 @@
 
 mkdir map_python
 
-for i in $(ls -X *.tmx)
+for i in *.tmx
 do
-	echo "$i -> ${i%%.*}.py"
+	echo "$i -> ${i%.*}.py"
 	python converter "$i" doors=^ entities=?*
-	cp "${i%%.*}.py" map_python/
-	rm "${i%%.*}.py"
+	cp "${i%.*}.py" map_python/
+	rm "${i%.*}.py"
 done
 
