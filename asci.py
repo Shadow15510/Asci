@@ -1,10 +1,18 @@
-# Asci (1.7.2)
+# Asci (1.7.3)
 
 class Asci:
     def __init__(self, maps, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
-        # Load maps
-        self.maps = [Map(*i) for i in maps]
-
+        # Load maps and entities
+        self.maps = []
+        self.entities = {}
+        for index, raw_map in [(i, maps[i]) for i in range(len(maps))]:
+            for j in raw_map[1]:
+                if j[0] in self.entities: raise KeyError("'{}' is already a registered entities".format(j[0]))
+                else: self.entities[j[0]] = Entity(index, *j)
+            raw_map = list(raw_map)
+            raw_map.pop(1)
+            self.maps.append(Map(*raw_map))
+        
         # Custom functions
         self._legend = list(events_mapping.keys())
         self._game_events_mapping = [events_mapping[i] for i in self._legend]
@@ -89,18 +97,17 @@ class Asci:
         return self.data[1], self.data[2], self.data[3]
 
     def _change_map(self, new_map):
-        # Update entities
-        if self.current_map:
-            for i in self.current_map.entities.copy():
-                entity = self.current_map.entities[i]
-                if entity.behavior == "follow":
-                    entity.pos_x = entity.pos_y = -1
-                    self.maps[new_map].entities[entity.entity_id] = entity
-                    self.maps[self.data[1]].entities.pop(i)
-
-        # Update current map
-        self.data[1] = new_map
+        # Update map id and data
+        old_map, self.data[1] = self.data[1], new_map
         self.current_map = self.maps[self.data[1]]
+
+        # Update entities
+        for i in self.entities:
+            entity = self.entities[i]
+            if entity.map_id == old_map and entity.behavior == "follow":
+                entity.pos_x = entity.pos_y = -1
+                entity.map_id = new_map
+            if entity.map_id == new_map: self.current_map.entities[i] = entity        
         
         # Update screen configuration
         self.screen.set_world(self.current_map.map_data)
@@ -173,7 +180,7 @@ class Asci:
             data_copy = self.data[:]
             for entity in self.current_map.entities.values():
                 self._behaviors[entity.behavior](entity, data_copy, self.stat, self.screen, walkable)
-                if (0 <= entity.pos_x - self.data[2] + 10 < self.screen.screen_width) and (0 <= entity.pos_y - self.data[3] + 3 < self.screen.screen_height):
+                if entity.map_id == self.data[1] and (0 <= entity.pos_x - self.data[2] + 10 < self.screen.screen_width) and (0 <= entity.pos_y - self.data[3] + 3 < self.screen.screen_height):
                     self.screen.set_cell(entity.pos_x, entity.pos_y, entity.symbol)
 
             self.screen.set_cell(self.data[2], self.data[3], player)
@@ -274,16 +281,16 @@ class Event:
 
 
 class Map:
-    def __init__(self, map_data, entities, *coords):
+    def __init__(self, map_data, *coords):
         self.map_data = map_data
-        if entities: self.entities = {i[0]: Entity(*i) for i in entities}
-        else: self.entities = {}
         self.coords = coords
+        self.entities = {}
 
 class Entity:
-    def __init__(self, entity_id, symbol, x, y, behavior, *args):
+    def __init__(self, map_id, entity_id, symbol, x, y, behavior, *args):
         self.entity_id = entity_id
         self.symbol = symbol
+        self.map_id = map_id
         self.pos_x = x
         self.pos_y = y
         self.behavior = behavior
@@ -291,6 +298,9 @@ class Entity:
 
     def change_behavior(self, new_behavior):
         if self.behavior != "permanent": self.behavior = new_behavior
+
+    def teleport(self, map_id, x, y):
+        self.map_id, self.pos_x, self.pos_y = map_id, x, y
 
 
 # Functions used by Asci
