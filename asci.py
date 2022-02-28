@@ -1,4 +1,4 @@
-# Asci (1.8.0)
+# Asci (1.8.1)
 
 class Asci:
     def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
@@ -20,7 +20,7 @@ class Asci:
         self._game_keys_mapping = {key: keys_mapping[key] for key in keys_mapping if not key in (1, 2, 3, 5)}
         
         # Custom entities behavior
-        self._behaviors = {"permanent": permanent, "stand by": stand_by, "follow": follow, "walk": walk}
+        self._behaviors = {"permanent": permanent, "stand by": stand_by, "follow": follow, "walk between": walk_between, "walk to": walk_to, "follow by player": follow_by_player}
         if behaviors:
             for i in behaviors: self._behaviors[i] = behaviors[i]
 
@@ -288,6 +288,7 @@ class Map:
         self.coords = coords
         self.entities = {}
 
+
 class Entity:
     def __init__(self, entity_id, symbol, map_id, x, y, behavior, *args):
         self.entity_id = entity_id
@@ -302,7 +303,7 @@ class Entity:
         if self.behavior != "permanent": self.behavior = new_behavior
 
     def teleport(self, map_id, x, y):
-        self.map_id, self.pos_x, self.pos_y = map_id, x, y
+        if self.behavio != "permanent": self.map_id, self.pos_x, self.pos_y = map_id, x, y
 
 
 # Functions used by Asci
@@ -415,9 +416,46 @@ def follow(entity, data, stat, screen, walkable):
         elif screen.get_cell(cases[0], cases[1]) in walkable: entity.pos_x, entity.pos_y = cases
 
 
-def walk(entity, data, stat, screen, walkable):
+def walk_between(entity, data, stat, screen, walkable):
     frame = (entity.args[0] + 1) % len(entity.args[1])
-    new_x, new_y = entity.args[1][frame]
+    new_x, new_y = _walk_engine(entity, frame)
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
     entity.args[0] = frame
+
+
+def walk_to(entity, data, stat, screen, walkable):
+    frame = entity.args[0]
+    if len(entity.args[1]) == frame:
+        entity.behavior = "stand by"
+        entity.args = []
+        return
+
+    new_x, new_y = _walk_engine(entity, frame)
+    
+    if screen.get_cell(new_x, new_y) in walkable:
+        entity.pos_x, entity.pos_y = new_x, new_y
+    entity.args[0] += 1
+
+
+def follow_by_player(entity, data, stat, screen, walkable):
+    frame = entity.args[0]
+    if len(entity.args[1]) == frame:
+        entity.behavior = "stand by"
+        entity.args = []
+        return
+        
+    new_x, new_y = _walk_engine(entity, frame)
+
+    if abs(data[2] - new_x) < 5 and abs(data[3] - new_y) < 3 and screen.get_cell(new_x, new_y) in walkable:
+        entity.pos_x, entity.pos_y = new_x, new_y
+        if (new_x, new_y) == entity.args[1][frame]: entity.args[0] += 1
+
+
+def _walk_engine(entity, frame):
+    delta_x, delta_y = list(map(lambda x,y: y - x, (entity.pos_x, entity.pos_y), entity.args[1][frame]))
+    new_x = entity.pos_x
+    new_y = entity.pos_y
+    if delta_x: new_x += abs(delta_x) // delta_x
+    if delta_y: new_y += abs(delta_y) // delta_y
+    return new_x, new_y
