@@ -1,7 +1,7 @@
-# Asci (1.8.1)
+# Asci (1.8.2)
 
 class Asci:
-    def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=6):
+    def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=7):
         # Load maps and entities
         self.maps = [Map(*i) for i in maps]
         self.entities = {}
@@ -155,7 +155,7 @@ class Asci:
                 return entity.entity_id
 
     # Mainloop
-    def mainloop(self, end_game, stat=None, data=None, routine=None, player="@", door="^", walkable=" ", exit_key=9, multi_move="."):
+    def mainloop(self, end_game, stat=None, data=None, routine=None, low_bar=None, player="@", door="^", walkable=" ", exit_key=9, multi_move="."):
         if exit_key in self._game_keys_mapping:
             raise ValueError("'{}' is already assigned to a function.".format(exit_key))
 
@@ -187,8 +187,10 @@ class Asci:
 
             self.screen.set_cell(self.data[2], self.data[3], player)
             
-            # Display map, get the key and update key buffer
-            key = convert(self.screen.display())
+            # Display map, low bar, get the key and update key buffer
+            if low_bar: bar = low_bar(self.data[:], self.stat[:])
+            else: bar = None
+            key = convert(self.screen.display(low_bar=bar))
             if not key: key = self.data[4]
             else: self.data[4] = key
 
@@ -215,7 +217,7 @@ class Asci:
 
 # Classes used by Asci
 class Screen:
-    def __init__(self, screen_width=21, screen_height=6):
+    def __init__(self, screen_width=21, screen_height=7):
         # Screen configuration
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -242,12 +244,16 @@ class Screen:
                     try: self._on_screen[y_map - y][x_map - x] = self._world[y_map][x_map]
                     except: pass
 
-
-    def display(self, return_input=True):
-        for line in self._on_screen:
-            print("".join(line))
-
-        if return_input: return input(">")
+    def display(self, return_input=True, low_bar=None):
+        for line_no in range(len(self._on_screen)):
+            line = "".join(self._on_screen[line_no])
+            if line_no + 1 == self.screen_height and return_input:
+                if not low_bar: line = line[:-6] + ">"
+                else: line = low_bar + ">" 
+                print(line, end="")
+                return input()
+            else:
+                print(line)
 
     def clear(self):
         print("\n" * self.screen_height)
