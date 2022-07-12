@@ -1,4 +1,6 @@
-# Asci (1.8.3)
+# Asci (1.9.0)
+from math import floor, ceil
+
 
 class Asci:
     def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=7):
@@ -260,7 +262,7 @@ class Screen:
         print("\n" * self.screen_height)
 
     def display_text(self, string):
-        paragraphs = [i for i in text_formater(string) if i]
+        paragraphs = [i for i in text_formater(string, self.screen_width, self.screen_height) if i]
         nb_par = len(paragraphs)
         for index in range(nb_par):
             self.clear()
@@ -386,28 +388,10 @@ def get_multi_move(key):
         return [(convert(k), 1) for k in key]
 
 
-
-# Extra functions
-def print_text(text, min_value=0, max_value=0, default_value=0):
-    paragraphs = [i for i in text_formater(text) if i]
-    nb = len(paragraphs)
-    for index in range(nb):
-        print("\n" * 7)
-        print(paragraphs[index])
-
-        if index + 1 == nb and (min_value or max_value or default_value) and min_value <= max_value:
-            result = input(">")
-            try: result = int(result)
-            except: result = default_value
-            if not (min_value <= result <= max_value): result = default_value
-
-            return result
-
-        else: input()
-
-
+# Motions functions
 def stand_by(entity, data, stat, screen, walkable):
     pass
+
 
 def permanent(entity, data, stat, screen, walkable):
     pass
@@ -467,3 +451,33 @@ def _walk_engine(entity, frame):
     if delta_x: new_x += abs(delta_x) // delta_x
     if delta_y: new_y += abs(delta_y) // delta_y
     return new_x, new_y
+
+
+# Extra functions
+def print_text(text, min_value=0, max_value=0, default_value=0, screen_width=21, screen_height=7):
+    paragraphs = [i for i in text_formater(text, screen_width, screen_height) if i]
+    nb = len(paragraphs)
+    for index in range(nb):
+        print("\n" * 7)
+        print(paragraphs[index])
+
+        if index + 1 == nb and (min_value or max_value or default_value) and min_value <= max_value:
+            result = input(">")
+            try: result = int(result)
+            except: result = default_value
+            if not (min_value <= result <= max_value): result = default_value
+
+            return result
+
+        else: input()
+
+
+def center(string, total_length, symbol):
+    left = floor((total_length - len(string)) / 2)
+    right = ceil((total_length - len(string)) / 2)
+
+    return left * symbol + string + right * symbol
+
+
+def enumerate(data):
+    return [(i, data[i]) for i in range(len(data))]
