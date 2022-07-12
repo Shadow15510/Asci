@@ -1,4 +1,4 @@
-# Asci (1.9.0)
+# Asci (1.9.1)
 from math import floor, ceil
 
 
@@ -405,7 +405,8 @@ def follow(entity, data, stat, screen, walkable):
         if entity.args: walkable += entity.args[0]
         cases = ((data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), 0, (data[2], data[3] + 1))[data[4] - 1]
         if not (0 <= cases[0] < screen.map_width and 0 <= cases[1] < screen.map_height): entity.pos_x, entity.pos_y = data[2], data[3]
-        elif screen.get_cell(cases[0], cases[1]) in walkable: entity.pos_x, entity.pos_y = cases
+        elif not screen.get_cell(cases[0], cases[1]) in walkable: (entity.pos_x, entity.pos_y), (data[2], data[3]) = (data[2], data[3]), (entity.pos_x, entity.pos_y)
+        else: entity.pos_x, entity.pos_y = cases
 
 
 def walk_between(entity, data, stat, screen, walkable):
