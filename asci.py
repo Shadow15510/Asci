@@ -402,11 +402,26 @@ def follow(entity, data, stat, screen, walkable):
         entity.pos_x, entity.pos_y = data[2], data[3]
 
     elif data[4] in (1, 2, 3, 5):
+        direction = (data[4] - 1) if data[4] != 5 else 3
+        
         if entity.args: walkable += entity.args[0]
-        cases = ((data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), 0, (data[2], data[3] + 1))[data[4] - 1]
-        if not (0 <= cases[0] < screen.map_width and 0 <= cases[1] < screen.map_height): entity.pos_x, entity.pos_y = data[2], data[3]
-        elif not screen.get_cell(cases[0], cases[1]) in walkable: (entity.pos_x, entity.pos_y), (data[2], data[3]) = (data[2], data[3]), (entity.pos_x, entity.pos_y)
-        else: entity.pos_x, entity.pos_y = cases
+        
+        cases = [(data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), (data[2], data[3] + 1)]
+        pos = cases[direction]
+        
+        if not (0 <= pos[0] < screen.map_width and 0 <= pos[1] < screen.map_height) or (not screen.get_cell(pos[0], pos[1]) in walkable):
+            find = False
+            cases.remove(cases[(direction + 2) % 4])
+            for pos in cases:
+                if (0 <= pos[0] < screen.map_width and 0 <= pos[1] < screen.map_height) and (screen.get_cell(pos[0], pos[1]) in walkable):
+                    find = True
+                    entity.pos_x, entity.pos_y = pos
+                    break
+            if not find:
+                entity.pos_x, entity.pos_y = data[2], data[3]
+
+        else:
+            entity.pos_x, entity.pos_y = pos
 
 
 def walk_between(entity, data, stat, screen, walkable):
