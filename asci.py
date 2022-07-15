@@ -309,11 +309,13 @@ class Entity:
         self.behavior = behavior
         self.args = list(args)
 
-    def change_behavior(self, new_behavior):
-        if self.behavior != "permanent": self.behavior = new_behavior
+    def change_behavior(self, new_behavior, *args):
+        if self.behavior != "permanent":
+            self.behavior = new_behavior
+            self.args = list(args)
 
     def teleport(self, map_id, x, y):
-        if self.behavio != "permanent": self.map_id, self.pos_x, self.pos_y = map_id, x, y
+        if self.behavior != "permanent": self.map_id, self.pos_x, self.pos_y = map_id, x, y
 
 
 # Functions used by Asci
@@ -429,11 +431,12 @@ def walk_between(entity, data, stat, screen, walkable):
     new_x, new_y = _walk_engine(entity, frame)
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
-    entity.args[0] = frame
+    if (entity.pos_x, entity.pos_y) == entity.args[1][frame]: entity.args[0] = frame
 
 
 def walk_to(entity, data, stat, screen, walkable):
     frame = entity.args[0]
+    print(frame, len(entity.args[1]), entity.args)
     if len(entity.args[1]) == frame:
         entity.behavior = "stand by"
         entity.args = []
@@ -443,7 +446,7 @@ def walk_to(entity, data, stat, screen, walkable):
     
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
-    entity.args[0] += 1
+    if (entity.pos_x, entity.pos_y) == entity.args[1][frame]: entity.args[0] += 1
 
 
 def follow_by_player(entity, data, stat, screen, walkable):
