@@ -1,4 +1,4 @@
-# Asci (1.9.0)
+# Asci (1.9.1)
 from math import floor, ceil
 
 
@@ -309,11 +309,13 @@ class Entity:
         self.behavior = behavior
         self.args = list(args)
 
-    def change_behavior(self, new_behavior):
-        if self.behavior != "permanent": self.behavior = new_behavior
+    def change_behavior(self, new_behavior, *args):
+        if self.behavior != "permanent":
+            self.behavior = new_behavior
+            self.args = list(args)
 
     def teleport(self, map_id, x, y):
-        if self.behavio != "permanent": self.map_id, self.pos_x, self.pos_y = map_id, x, y
+        if self.behavior != "permanent": self.map_id, self.pos_x, self.pos_y = map_id, x, y
 
 
 # Functions used by Asci
@@ -402,10 +404,26 @@ def follow(entity, data, stat, screen, walkable):
         entity.pos_x, entity.pos_y = data[2], data[3]
 
     elif data[4] in (1, 2, 3, 5):
+        direction = (data[4] - 1) if data[4] != 5 else 3
+        
         if entity.args: walkable += entity.args[0]
-        cases = ((data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), 0, (data[2], data[3] + 1))[data[4] - 1]
-        if not (0 <= cases[0] < screen.map_width and 0 <= cases[1] < screen.map_height): entity.pos_x, entity.pos_y = data[2], data[3]
-        elif screen.get_cell(cases[0], cases[1]) in walkable: entity.pos_x, entity.pos_y = cases
+        
+        cases = [(data[2] + 1, data[3]), (data[2], data[3] - 1), (data[2] - 1, data[3]), (data[2], data[3] + 1)]
+        pos = cases[direction]
+        
+        if not (0 <= pos[0] < screen.map_width and 0 <= pos[1] < screen.map_height) or (not screen.get_cell(pos[0], pos[1]) in walkable):
+            find = False
+            cases.remove(cases[(direction + 2) % 4])
+            for pos in cases:
+                if (0 <= pos[0] < screen.map_width and 0 <= pos[1] < screen.map_height) and (screen.get_cell(pos[0], pos[1]) in walkable):
+                    find = True
+                    entity.pos_x, entity.pos_y = pos
+                    break
+            if not find:
+                entity.pos_x, entity.pos_y = data[2], data[3]
+
+        else:
+            entity.pos_x, entity.pos_y = pos
 
 
 def walk_between(entity, data, stat, screen, walkable):
@@ -413,11 +431,12 @@ def walk_between(entity, data, stat, screen, walkable):
     new_x, new_y = _walk_engine(entity, frame)
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
-    entity.args[0] = frame
+    if (entity.pos_x, entity.pos_y) == entity.args[1][frame]: entity.args[0] = frame
 
 
 def walk_to(entity, data, stat, screen, walkable):
     frame = entity.args[0]
+    print(frame, len(entity.args[1]), entity.args)
     if len(entity.args[1]) == frame:
         entity.behavior = "stand by"
         entity.args = []
@@ -427,7 +446,7 @@ def walk_to(entity, data, stat, screen, walkable):
     
     if screen.get_cell(new_x, new_y) in walkable:
         entity.pos_x, entity.pos_y = new_x, new_y
-    entity.args[0] += 1
+    if (entity.pos_x, entity.pos_y) == entity.args[1][frame]: entity.args[0] += 1
 
 
 def follow_by_player(entity, data, stat, screen, walkable):
