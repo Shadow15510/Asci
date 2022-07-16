@@ -18,7 +18,7 @@ Tout le projet est soumis à la licence GNU General Public Licence v3.0.
 
 ### Utilisation
 
-Tout est détaillé dans [le wiki du projet](https://gitea.planet-casio.com/Shadow15510/Asci/wiki/Cr%C3%A9ation-d%27un-jeu-de-r%C3%B4le-avec-Asci).
+Tout est détaillé dans [le wiki du projet](https://gitea.planet-casio.com/Shadow15510/Asci/wiki/Home).
 
 ### Exemples
 
