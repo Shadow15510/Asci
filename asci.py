@@ -1,9 +1,12 @@
-# Asci (1.9.1)
+# Asci (1.9.2)
 from math import floor, ceil
+
+SCREEN_WIDTH = 21
+SCREEN_HEIGHT = 7
 
 
 class Asci:
-    def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None, screen_width=21, screen_height=7):
+    def __init__(self, maps, entities, events_mapping, keys_mapping, behaviors=None):
         # Load maps and entities
         self.maps = [Map(*i) for i in maps]
         self.entities = {}
@@ -27,7 +30,7 @@ class Asci:
             for i in behaviors: self._behaviors[i] = behaviors[i]
 
         # Screen initialisation
-        self.screen = Screen(screen_width, screen_height)
+        self.screen = Screen()
         self.current_map = None
 
     def _looked_case(self, direction):
@@ -184,7 +187,7 @@ class Asci:
             data_copy = self.data[:]
             for entity in self.current_map.entities.values():
                 self._behaviors[entity.behavior](entity, data_copy, self.stat, self.screen, walkable)
-                if entity.map_id == self.data[1] and (0 <= entity.pos_x - self.data[2] + self.screen.pos_player[0] < self.screen.screen_width) and (0 <= entity.pos_y - self.data[3] + self.screen.pos_player[1] < self.screen.screen_height):
+                if entity.map_id == self.data[1] and (0 <= entity.pos_x - self.data[2] + self.screen.pos_player[0] < SCREEN_WIDTH) and (0 <= entity.pos_y - self.data[3] + self.screen.pos_player[1] < SCREEN_HEIGHT):
                     self.screen.set_cell(entity.pos_x, entity.pos_y, entity.symbol)
 
             self.screen.set_cell(self.data[2], self.data[3], player)
@@ -219,12 +222,10 @@ class Asci:
 
 # Classes used by Asci
 class Screen:
-    def __init__(self, screen_width=21, screen_height=7):
+    def __init__(self):
         # Screen configuration
-        self.screen_width = screen_width
-        self.screen_height = screen_height
-        self.pos_player = (screen_width // 2, screen_height // 2)
-        self._on_screen = [[" " for _ in range(screen_width)] for _ in range(screen_height)]
+        self.pos_player = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self._on_screen = [[" " for _ in range(SCREEN_WIDTH)] for _ in range(SCREEN_HEIGHT)]
         self._asci_data = []
 
     def load_data(self, data):
@@ -240,8 +241,8 @@ class Screen:
 
     def set_screen(self):
         x = self._asci_data[2] - self.pos_player[0] ; y = self._asci_data[3] - self.pos_player[1]
-        for x_map in range(x, x + self.screen_width):
-            for y_map in range(y, y + self.screen_height):
+        for x_map in range(x, x + SCREEN_WIDTH):
+            for y_map in range(y, y + SCREEN_HEIGHT):
                 self._on_screen[y_map - y][x_map - x] = " "
                 if 0 <= x_map < self.map_width and 0 <= y_map < self.map_height:
                     try: self._on_screen[y_map - y][x_map - x] = self._world[y_map][x_map]
@@ -250,7 +251,7 @@ class Screen:
     def display(self, return_input=True, low_bar=None):
         for line_no in range(len(self._on_screen)):
             line = "".join(self._on_screen[line_no])
-            if line_no + 1 == self.screen_height and return_input:
+            if line_no + 1 == SCREEN_HEIGHT and return_input:
                 if not low_bar: line = line[:-6] + ">"
                 else: line = low_bar + ">" 
                 print(line, end="")
@@ -259,10 +260,10 @@ class Screen:
                 print(line)
 
     def clear(self):
-        print("\n" * self.screen_height)
+        print("\n" * SCREEN_HEIGHT)
 
     def display_text(self, string):
-        paragraphs = [i for i in text_formater(string, self.screen_width, self.screen_height) if i]
+        paragraphs = [i for i in text_formater(string, SCREEN_WIDTH, SCREEN_HEIGHT) if i]
         nb_par = len(paragraphs)
         for index in range(nb_par):
             self.clear()
@@ -273,13 +274,13 @@ class Screen:
     def set_cell(self, x, y, value):
         x = x - (self._asci_data[2] - self.pos_player[0])
         y = y - (self._asci_data[3] - self.pos_player[1])
-        if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
+        if 0 <= x < SCREEN_WIDTH and 0 <= y < SCREEN_HEIGHT:
             self._on_screen[y][x] = value
 
     def get_cell(self, x, y):
         x = x - (self._asci_data[2] - self.pos_player[0])
         y = y - (self._asci_data[3] - self.pos_player[1])
-        if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
+        if 0 <= x < SCREEN_WIDTH and 0 <= y < SCREEN_HEIGHT:
             return self._on_screen[y][x]
         else: return " "
 
@@ -326,34 +327,35 @@ def convert(string, force_int=False):
         else: return string
 
 
-def text_formater(string, screen_width=21, screen_height=6):
+def text_formater(string):
+    screen_displayable_height = SCREEN_HEIGHT - 1
 
-    def line_formater(string, screen_width):
+    def line_formater(string):
         string_result = ""        
-        while len(string) > screen_width:
-            stop_index = screen_width
+        while len(string) > SCREEN_WIDTH:
+            stop_index = SCREEN_WIDTH
             while stop_index > 0 and not string[stop_index].isspace(): stop_index -= 1
-            if not stop_index: stop_index = screen_width
+            if not stop_index: stop_index = SCREEN_WIDTH
 
             string_result += string[:stop_index].strip() + "\n"
             string = string[stop_index:].strip()
 
         return string_result + string
 
-    def paragraph_formater(lines, screen_height):
+    def paragraph_formater(lines):
         paragraphs = ""
-        while len(lines) >= screen_height:
-            paragraphs += "\n".join(lines[:screen_height]) + "\n\n"
-            lines = lines[screen_height:]
+        while len(lines) >= screen_displayable_height:
+            paragraphs += "\n".join(lines[:screen_displayable_height]) + "\n\n"
+            lines = lines[screen_displayable_height:]
 
         return paragraphs + "\n".join(lines)
 
     lines = []
     for line in string.split("\n"):
-        for formated_line in line_formater(line, screen_width).split("\n"):
+        for formated_line in line_formater(line).split("\n"):
             lines.append(formated_line)
 
-    return paragraph_formater(lines, screen_height).split("\n\n")
+    return paragraph_formater(lines).split("\n\n")
 
 
 def read_event(data, event, quest):
@@ -473,8 +475,8 @@ def _walk_engine(entity, frame):
 
 
 # Extra functions
-def print_text(text, min_value=0, max_value=0, default_value=0, screen_width=21, screen_height=7):
-    paragraphs = [i for i in text_formater(text, screen_width, screen_height) if i]
+def print_text(text, min_value=0, max_value=0, default_value=0):
+    paragraphs = [i for i in text_formater(text) if i]
     nb = len(paragraphs)
     for index in range(nb):
         print("\n" * 7)
