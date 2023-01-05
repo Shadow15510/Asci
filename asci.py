@@ -1,4 +1,4 @@
-# Asci (1.9.2)
+# Asci (1.9.3)
 from math import floor, ceil
 
 SCREEN_WIDTH = 21
@@ -263,7 +263,7 @@ class Screen:
         print("\n" * SCREEN_HEIGHT)
 
     def display_text(self, string):
-        paragraphs = [i for i in text_formater(string, SCREEN_WIDTH, SCREEN_HEIGHT) if i]
+        paragraphs = [i for i in text_formater(string) if i]
         nb_par = len(paragraphs)
         for index in range(nb_par):
             self.clear()
